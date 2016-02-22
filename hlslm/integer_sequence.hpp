@@ -2,8 +2,33 @@
 #include <utility>
 #include <type_traits>
 
+
+#ifndef STD_CONJECTION_DISJUNCTION
+#define STD_CONJECTION_DISJUNCTION 1
 namespace std
 {
+	template<class...> struct conjunction : std::true_type { };
+	template<class B1> struct conjunction<B1> : B1 { };
+	template<class B1, class... Bn>
+	struct conjunction<B1, Bn...> : std::conditional_t<B1::value != false, conjunction<Bn...>, B1> {};
+
+	template<class...> struct disjunction : std::false_type { };
+	template<class B1> struct disjunction<B1> : B1 { };
+	template<class B1, class... Bn>
+	struct disjunction<B1, Bn...> : std::conditional_t<B1::value != false, B1, disjunction<Bn...>> {};
+}
+#endif
+
+namespace sequence_meta_program
+{
+	using std::integer_sequence;
+	using std::index_sequence;
+	using std::integral_constant;
+	using std::make_index_sequence;
+	using std::make_integer_sequence;
+	using std::conditional;
+	using std::conditional_t;
+
 	template< size_t I, class T >
 	struct get_element;
 
@@ -18,6 +43,35 @@ namespace std
 	template< typename _Ty, _Ty Head, _Ty... Tail >
 	struct get_element<0, integer_sequence<_Ty, Head, Tail...>>
 		: public integral_constant<_Ty, Head> {};
+
+	template<typename _Ty, size_t I, _Ty Val, class Sequence, class PrevSeq = integer_sequence<_Ty>>
+	struct set_element_impl;
+
+	template<typename _Ty, _Ty Val, size_t I, _Ty Current, _Ty... Tail, _Ty... Prev>
+	struct set_element_impl<_Ty, I, Val, integer_sequence<_Ty, Current, Tail...>, integer_sequence<_Ty, Prev...>>
+		: public set_element_impl<_Ty, I - 1, Val, integer_sequence<_Ty, Tail...>, integer_sequence<_Ty, Prev..., Current>>
+	{};
+
+	template<typename _Ty, _Ty Val, _Ty Current, _Ty... Tail, _Ty... Prev>
+	struct set_element_impl<_Ty, 0, Val, integer_sequence<_Ty, Current, Tail...>, integer_sequence<_Ty, Prev...>>
+	{
+		using type = integer_sequence<_Ty, Prev..., Val, Tail...>;
+	};
+
+	template<typename _Ty, size_t I, _Ty Val, class Sequence, class PrevSeq = integer_sequence<_Ty>>
+	using set_element_impl_t = typename set_element_impl<_Ty, I, Val, Sequence, PrevSeq>::type;
+
+	template<size_t I, int Val, class Sequence>
+	struct set_element;
+
+	template<size_t I, int Val, typename _Ty, _Ty... IS>
+	struct set_element<I, Val, integer_sequence<_Ty, IS...>>
+		: public set_element_impl<_Ty, I, _Ty(Val), integer_sequence<_Ty, IS...>>
+	{
+	};
+
+	template<size_t I, int Val, class Sequence>
+	using set_element_t = typename set_element<I,Val, Sequence>::type;
 
 	template <typename Seq1, typename Seq2, int Offset = 0>
 	struct concat_sequence;

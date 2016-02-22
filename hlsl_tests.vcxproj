@@ -14,6 +14,7 @@
     <ProjectGuid>{FFC78887-5259-40C8-A5F4-CCFB407D36DC}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SSEBenchs</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.10586.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -41,11 +42,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SDKS)\boost_1_52_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SDKS)\boost_1_52_0;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -73,9 +74,10 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <BufferSecurityCheck>false</BufferSecurityCheck>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <CallingConvention>FastCall</CallingConvention>
+      <CallingConvention>VectorCall</CallingConvention>
+      <AssemblerOutput>AssemblyCode</AssemblerOutput>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,6 +108,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="hlslm\integer_sequence.hpp" />
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
