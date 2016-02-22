@@ -14,6 +14,9 @@
     <Filter Include="Asm">
       <UniqueIdentifier>{f66e43c1-950f-4cc6-af51-7f56b70a4070}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hlslm">
+      <UniqueIdentifier>{ef3f062e-c2a4-44a7-8e51-11826d3687eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hlsl\float_xvector.hpp">
@@ -51,6 +54,15 @@
     </ClInclude>
     <ClInclude Include="hlsl\xm_traits.hpp">
       <Filter>hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\vector_traits.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmmatrix.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmvector.hpp">
+      <Filter>hlslm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
