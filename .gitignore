@@ -242,3 +242,5 @@ _Pvt_Extensions
 .idea/
 *.sln.iml
 *.db
+main.exe
+main.asm

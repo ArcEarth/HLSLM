@@ -77,7 +77,7 @@
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
       <FloatingPointModel>Fast</FloatingPointModel>
       <CallingConvention>VectorCall</CallingConvention>
-      <AssemblerOutput>AssemblyCode</AssemblerOutput>
+      <AssemblerOutput>All</AssemblerOutput>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hlslm\integer_sequence.hpp" />
+    <ClInclude Include="hlslm\permutation_inverse.h" />
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />

@@ -6,10 +6,6 @@
 
 using namespace DirectX::hlsl;
 
-using swizzler = xmvector_swizzler<float, 1, 2>;
-
-swizzler sv;
-
 inline xmvector3f XM_CALLCONV wzyx(xmvector4f xmv)
 {
 	xmvector3f result = swizzle<3, 2, 1>(xmv);
@@ -23,31 +19,50 @@ xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
 	return result;
 }
 
+using std::integer_sequence;
+
+template <typename IS1, typename IS2>
+struct test;
+
+template <int... a, int... b>
+struct test<integer_sequence<int,a...>, integer_sequence<int, b...>>
+{
+	using type = integer_sequence<int,(a+b)...>;
+};
+
+using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 2, 3>>::type;
+
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
-	//xmvector2f result;
-	//xmscalar<float> xv(x);
+	xmvector4f result;
+	xmscalar<float> xv(x);
 
-	//using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
-	//result = swizzle_assign(swizzle<0,1>(result), swizzle<0,2>(xv));
-	//return result.as<4>();
+	using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
+	result.v = swizzle_assign(swizzle<0>(v), swizzle<0>(xv));
+	return result;
+
+	//using rstSwz = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<0, 1>, index_sequence<0, 0>>::type;
+	//using sorted = typename sort_sequence<index_sequence<3*4+1, 1*4+2, 2*4+0, 0*4+3>>::type;
 }
 
 int __cdecl main( int argc, char *argv[] )
 {
+	DirectX::XMFLOAT4A f4, f3;
 	xmvector4f xmv;
-	xmv.v = DirectX::XMVectorSet(1, 2, 3, 4);
-
 	xmvector4f ret0,ret1;
+	xmv.v = DirectX::XMVectorSet(1, 2, 3, 4);
 
 	ret0 = SetX_HL(xmv, 5.0f);
 
+	DirectX::XMStoreFloat4A(&f4, ret0.v);
+
+	std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
+
 	ret1 = SetX_XM(xmv, 5.0f);
 
-	DirectX::XMFLOAT4A f4,f3;
-	DirectX::XMStoreFloat4A(&f4, ret0.v);
 	DirectX::XMStoreFloat4A(&f3, ret1.v);
 
+	std::cout << f3.x << ',' << f3.y << ',' << f3.z << ',' << f3.w << std::endl;
 	//xmvector3f result = wzyx(xmv);
 
 	//xmvector2f sar = swizzle_assign(make_swizzler<2, 1>(result), make_swizzler<2, 1>(xmv));
@@ -58,10 +73,8 @@ int __cdecl main( int argc, char *argv[] )
 	//DirectX::XMFLOAT4A f4;
 	//DirectX::XMStoreFloat4A(&f4, result.v);
 
-	std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
-	std::cout << f3.x << ',' << f3.y << ',' << f3.z << ',' << f3.w << std::endl;
-	//char ch;
-	//std::cin >> ch;
+	char ch;
+	std::cin >> ch;
 
 	//unit_tests();	
 

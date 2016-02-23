@@ -19,7 +19,7 @@ namespace std
 }
 #endif
 
-namespace sequence_meta_program
+namespace mpl
 {
 	using std::integer_sequence;
 	using std::index_sequence;
@@ -134,6 +134,85 @@ namespace sequence_meta_program
 	template <size_t Size, typename _Ty>
 	using head_sequence_t = typename head_sequence<Size, _Ty>::type;
 
+	template<size_t I, class Sequence, class PrevSeq>
+	struct split_sequence;
+
+	template<typename _Ty, size_t I, _Ty Current, _Ty... Tail, _Ty... Prev>
+	struct split_sequence<I, integer_sequence<_Ty, Current, Tail...>, integer_sequence<_Ty, Prev...>>
+		: public split_sequence<I - 1, integer_sequence<_Ty, Tail...>, integer_sequence<_Ty, Prev..., Current>>
+	{};
+
+	template<typename _Ty, _Ty Current, _Ty... Tail, _Ty... Prev>
+	struct split_sequence<0, integer_sequence<_Ty, Current, Tail...>, integer_sequence<_Ty, Prev...>>
+	{
+		using head = integer_sequence<_Ty, Current, Prev...>;
+		using tail = integer_sequence<_Ty, Tail...>;
+	};
+
+	template <typename IS1, typename IS2, typename Sorted>
+	struct ordered_merge;
+
+	template <typename _Ty , _Ty... Seq1, _Ty... Sorted>
+	struct ordered_merge<integer_sequence<_Ty, Seq1...>, integer_sequence<_Ty>, integer_sequence<_Ty, Sorted...>>
+	{
+		using type = integer_sequence<_Ty, Sorted..., Seq1...>;
+	};
+
+	template <typename _Ty, _Ty... Seq2, _Ty... Sorted>
+	struct ordered_merge<integer_sequence<_Ty>, integer_sequence<_Ty, Seq2...>, integer_sequence<_Ty, Sorted...>>
+	{
+		using type = integer_sequence<_Ty, Sorted..., Seq2...>;
+	};
+
+	template <typename _Ty, _Ty Head1, _Ty... Tail1, _Ty Head2, _Ty... Tail2, _Ty... Sorted>
+	struct ordered_merge<integer_sequence<_Ty, Head1, Tail1...>, integer_sequence<_Ty, Head2, Tail2...>, integer_sequence<_Ty, Sorted...>>
+		: std::conditional_t<Head1 < Head2,
+			ordered_merge<integer_sequence<_Ty, Tail1...>, integer_sequence<_Ty, Head2, Tail2...>, integer_sequence<_Ty, Sorted..., Head1>>,
+			ordered_merge<integer_sequence<_Ty, Head1, Tail1...>, integer_sequence<_Ty, Tail2...>, integer_sequence<_Ty, Sorted..., Head2>>
+		>
+	{};
+
+	template <typename IS>
+	struct sort_sequence;
+
+	template <typename _Ty, _Ty a>
+	struct sort_sequence<integer_sequence<_Ty, a>>
+	{
+		using type = integer_sequence<_Ty, a>;
+	};
+
+	template <typename _Ty, _Ty a, _Ty b>
+	struct sort_sequence<integer_sequence<_Ty, a, b>>
+		: public conditional < a < b,
+		integer_sequence<_Ty, a, b >,
+		integer_sequence<_Ty, b, a >> {
+	};
+
+	template <typename _Ty, _Ty... values>
+	struct sort_sequence<integer_sequence<_Ty, values...>>
+	{
+		using splited_seq = split_sequence<sizeof...(values) / 2, integer_sequence<_Ty, values...>, integer_sequence<_Ty>>;
+		using sorted_head_seq = typename sort_sequence<typename splited_seq::head>::type;
+		using sorted_tail_seq = typename sort_sequence<typename splited_seq::tail>::type;
+		using type = typename ordered_merge<sorted_head_seq, sorted_tail_seq, integer_sequence<_Ty>>::type;
+	};
+
+	// As[Idx] = Vals
+	template <typename As, typename Idx, typename Vals>
+	struct indirect_assign;
+
+	template <typename _Ty, _Ty... Masks, size_t IdxHead, size_t... Indices, _Ty ValHead, _Ty... Values>
+	struct indirect_assign<integer_sequence<_Ty, Masks...>, index_sequence<IdxHead, Indices...>, integer_sequence<_Ty, ValHead, Values...>>
+		: public indirect_assign< set_element_t<IdxHead, ValHead, integer_sequence<_Ty, Masks...>>, index_sequence<Indices...>, integer_sequence<_Ty, Values...>>
+	{};
+
+	template <typename _Ty, _Ty... Masks>
+	struct indirect_assign<integer_sequence<_Ty, Masks...>, index_sequence<>, integer_sequence<_Ty>>
+	{
+		using type = integer_sequence<_Ty, Masks...>;
+	};
+
+
 	//template <size_t Start, size_t Size, typename Seq>
 	//struct sub_sequence
 	//{
@@ -144,11 +223,12 @@ namespace sequence_meta_program
 	//template <size_t Start, size_t Size, typename Seq>
 	//using sub_sequence_t = typename sub_sequence<Start, Size, Seq>::type;
 
+	// Preserve the length of Seq2, but overrite the content with Seq1 as long as poosible
 	template <typename Seq1, typename Seq2>
-	struct merge_sequence;
+	struct overwrite_sequence;
 
 	template <typename _Ty, _Ty ... Is1, _Ty ... Is2>
-	struct merge_sequence<integer_sequence<_Ty, Is1...>, integer_sequence<_Ty, Is2...>>
+	struct overwrite_sequence<integer_sequence<_Ty, Is1...>, integer_sequence<_Ty, Is2...>>
 	{
 		using type = concat_sequence_t <
 			integer_sequence<_Ty, Is1...>,
@@ -157,7 +237,7 @@ namespace sequence_meta_program
 	};
 
 	template <typename Seq1, typename Seq2>
-	using merge_sequence_t = typename merge_sequence<Seq1, Seq2>::type;
+	using overwrite_sequence_t = typename overwrite_sequence<Seq1, Seq2>::type;
 
 	template <typename _Ty, typename IS>
 	struct cast_sequence;
