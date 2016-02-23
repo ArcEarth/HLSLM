@@ -26,11 +26,44 @@ namespace DirectX
 		template <typename lhs_t, typename rhs_t>
 		using float_vector_binary_operator_t = typename float_vector_binary_operator_type<lhs_t, rhs_t>::type;
 
+		//template <size_t _Size>
+		//inline xmvector<float, _Size> XM_CALLCONV operator+(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		//{
+		//	xmvector<float, _Size> ret;
+		//	ret.v = XMVectorAdd(lhs.v, rhs.v);
+		//	return ret;
+		//}
+
+		//template <size_t _Size>
+		//inline xmvector<float, _Size> XM_CALLCONV operator-(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		//{
+		//	xmvector<float, _Size> ret;
+		//	ret.v = XMVectorSubtract(lhs.v, rhs.v);
+		//	return ret;
+		//}
+
+		//template <size_t _Size>
+		//inline xmvector<float, _Size> XM_CALLCONV operator*(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		//{
+		//	xmvector<float, _Size> ret;
+		//	ret.v = XMVectorMultiply(lhs.v, rhs.v);
+		//	return ret;
+		//}
+
+		//template <size_t _Size>
+		//inline xmvector<float, _Size> XM_CALLCONV operator/(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		//{
+		//	xmvector<float, _Size> ret;
+		//	ret.v = XMVectorDivide(lhs.v, rhs.v);
+		//	return ret;
+		//}
+
 		template <typename lhs_t, typename rhs_t>
 		inline float_vector_binary_operator_t<lhs_t,rhs_t> XM_CALLCONV operator+(const lhs_t lhs, const rhs_t rhs)
 		{
-			float_vector_binary_operator_t<lhs_t, rhs_t> ret;
-			ret.v = XMVectorAdd(lhs.v, rhs.v);
+			using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
+			ret_type ret;
+			ret.v = XMVectorAdd(ret_type(lhs).v, ret_type(rhs.v).v);
 			return ret;
 		}
 

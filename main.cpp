@@ -38,14 +38,20 @@ using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
 	xmvector2f v2;
+	xmscalar<float> vs;
 
 	float kf = v2.x();
 
-	v2 = v2.swizzle<0,1>();
+	v2 = v2.swizzle<0,1>().swizzle<1,0>();
 	v2 = v.xy().yx();
+	v2 = v2 + vs;
 	v2 = v2 + v.xy();
+	v.xy() = v2 - v.yw();
 
 	xmvector4f result;
+	using cacate_t = decltype(result.xywz().wz());
+
+	cacate_t vp;
 	xmscalar<float> xv(x);
 	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
 	result.xz() = v.xy();

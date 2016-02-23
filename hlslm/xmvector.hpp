@@ -158,6 +158,12 @@ namespace DirectX
 				v = detail::rep_scalar(s);
 				return *this;
 			}
+
+			template <size_t _Size>
+			inline XM_CALLCONV operator xmvector<Scalar, _Size>() const
+			{
+				return reinterpret_cast<const xmvector<Scalar, _Size>&>(*this);
+			}
 		};
 
 		// Untyped Get Set implementation
@@ -327,8 +333,8 @@ namespace DirectX
 			template <typename _T, typename IS>
 			struct swizzle_from_indecis;
 
-			template <typename _T, size_t _Size, index_t... _SwzArgs>
-			struct swizzle_from_indecis<xmvector<_T, _Size>, index_sequence<_SwzArgs...>>
+			template <typename _T, index_t... _SwzArgs>
+			struct swizzle_from_indecis<_T, index_sequence<_SwzArgs...>>
 			{
 				using type = xmvector_swizzler<_T, _SwzArgs...>;
 			};
@@ -343,14 +349,16 @@ namespace DirectX
 			struct xmvector_swizzler_concat<xmvector_swizzler<_T, SW1...>, SW2...>
 			{
 				using type = swizzle_from_indecis_t <
-					xmvector<_T, sizeof...(SW1)>,
+					_T,
 					concat_swizzle_sequence_t <
-					index_sequence<SW1...>,
-					index_sequence<SW2... >> >;
+						index_sequence<SW1...>,
+						index_sequence<SW2... >> >;
 			};
 
 			template <typename XMV_S1, index_t... SW2>
 			using xmvector_swizzler_concat_t = typename xmvector_swizzler_concat<XMV_S1, SW2...>::type;
+
+			//using test = xmvector_swizzler_concat_t<xmvector_swizzler<float, 1, 2, 3>, 3, 2, 1>;
 		}
 
 
@@ -373,8 +381,8 @@ namespace DirectX
 			XMVECTOR v;
 
 			xmvector_swizzler() = delete;
-			xmvector_swizzler(const this_type& rhs) = delete;
-			void operator=(const this_type& rhs) = delete;
+			//xmvector_swizzler(const this_type& rhs) = delete;
+			//void operator=(const this_type& rhs) = delete;
 
 			inline IndirectType XM_CALLCONV eval() const
 			{
@@ -426,10 +434,10 @@ namespace DirectX
 				this->v = detail::select_impl<mask_seq>::invoke(src.v, this->v);
 			}
 
-			// any to any assignment
+			// any to any assignment, expcept swz == src_swz
 			// v4.yz = v3.zy;
 			template <index_t... _SrcSwz>
-			inline enable_if_t<(Size < 4) && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
+			inline enable_if_t<(Size < 4) && !std::is_same<index_sequence<_SwzArgs...>, index_sequence<_SrcSwz...>>::value && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
 				XM_CALLCONV
 				assign(const xmvector_swizzler<Scalar, _SrcSwz...>&& src)
 			{
