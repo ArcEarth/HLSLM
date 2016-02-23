@@ -112,11 +112,16 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hlslm\integer_sequence.hpp" />
-    <ClInclude Include="hlslm\permutation_inverse.h" />
+    <ClInclude Include="hlslm\detail\mpl.hpp" />
+    <ClInclude Include="hlslm\detail\swizzles_def_2.h" />
+    <ClInclude Include="hlslm\detail\swizzles_def_3.h" />
+    <ClInclude Include="hlslm\detail\swizzles_def_4.h" />
+    <ClInclude Include="hlslm\detail\swizzle_macro.h" />
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
+    <ClInclude Include="hlslm\xmvector_constants.hpp" />
+    <ClInclude Include="hlslm\xmvector_operators.hpp" />
     <ClInclude Include="hlsl\array_traits.hpp" />
     <ClInclude Include="hlsl\float_xvector.hpp" />
     <ClInclude Include="hlsl\float_math.hpp" />

@@ -1,5 +1,7 @@
 //#include "hlsl/hlsl.hpp"
 #include "hlslm\xmvector.hpp"
+#include "hlslm\xmvector_operators.hpp"
+
 #include <iostream>
 
 #include <type_traits>
@@ -35,10 +37,18 @@ using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
+	xmvector2f v2;
+
+	float kf = v2.x();
+
+	v2 = v2.swizzle<0,1>();
+	v2 = v.xy().yx();
+	v2 = v2 + v.xy();
+
 	xmvector4f result;
 	xmscalar<float> xv(x);
 	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
-	result.xx() = v.xy();
+	result.xz() = v.xy();
 	//using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
 	//result.v = detail::swizzle_assign(v.swizzle<0>(), xv.swizzle<0>());
 	return result;

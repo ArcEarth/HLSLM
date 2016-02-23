@@ -18,6 +18,9 @@
     <Filter Include="hlslm">
       <UniqueIdentifier>{ef3f062e-c2a4-44a7-8e51-11826d3687eb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="hlslm\details">
+      <UniqueIdentifier>{338e3637-ca30-46ba-aea6-1d78359d777a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hlsl\float_xvector.hpp">
@@ -65,10 +68,25 @@
     <ClInclude Include="hlslm\xmvector.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\integer_sequence.hpp">
+    <ClInclude Include="hlslm\detail\mpl.hpp">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\swizzle_macro.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\swizzles_def_2.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\swizzles_def_3.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\swizzles_def_4.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmvector_operators.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\permutation_inverse.h">
+    <ClInclude Include="hlslm\xmvector_constants.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
   </ItemGroup>
