@@ -265,16 +265,15 @@ namespace DirectX
 			xmvector_swizzler() = delete;
 
 			using Scalar = _T;
-			static constexpr size_t IndirectSize = sizeof...(_SwzArgs);
-			static constexpr size_t Size = IndirectSize;
+			static constexpr size_t Size = sizeof...(_SwzArgs);
 
-			static_assert(IndirectSize <= 4, "Swizzle element count out of 4");
+			static_assert(Size <= 4, "Swizzle element count out of 4");
 			static_assert(std::conjunction <std::integral_constant<bool,_SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
 
 			using Indices = index_sequence<_SwzArgs...>;
-			using IndirectType = xmvector<Scalar, IndirectSize>;
+			using IndirectType = xmvector<Scalar, Size>;
 			using MergedIndices =
-				conditional_t<IndirectSize == 4,
+				conditional_t<Size == 4,
 					Indices,
 					merge_sequence_t<Indices, std::make_index_sequence<4>>>;
 
