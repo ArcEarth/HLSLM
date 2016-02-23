@@ -6,14 +6,15 @@
 
 using namespace DirectX::hlsl;
 
-inline xmvector3f XM_CALLCONV wzyx(xmvector4f xmv)
-{
-	xmvector3f result = swizzle<3, 2, 1>(xmv);
-	return result;
-}
+//inline xmvector3f XM_CALLCONV wzyx(xmvector4f xmv)
+//{
+//	xmvector3f result = swizzle<3, 2, 1>(xmv);
+//	return result;
+//}
 
 xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
 {
+	//float vx = swizzle<1>(v);
 	xmvector4f result;
 	result.v = DirectX::XMVectorSetX(v.v, x);
 	return result;
@@ -36,9 +37,10 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
 	xmvector4f result;
 	xmscalar<float> xv(x);
-
-	using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
-	result.v = swizzle_assign(swizzle<0>(v), swizzle<0>(xv));
+	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
+	result.xx() = v.xy();
+	//using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
+	//result.v = detail::swizzle_assign(v.swizzle<0>(), xv.swizzle<0>());
 	return result;
 
 	//using rstSwz = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<0, 1>, index_sequence<0, 0>>::type;

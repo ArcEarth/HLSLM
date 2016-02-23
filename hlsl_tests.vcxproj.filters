@@ -6,6 +6,7 @@
     <ClCompile Include="operators_generation_checks.cpp" />
     <ClCompile Include="algorithms_generation_checks.cpp" />
     <ClCompile Include="traits_static_asserts.cpp" />
+    <ClCompile Include="swizzle_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="hlsl">
