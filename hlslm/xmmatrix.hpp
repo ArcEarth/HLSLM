@@ -5,12 +5,12 @@ namespace DirectX
 {
     namespace hlsl
     {
-        template <typename _T, int _Rows, int _Cols>
+        template <typename _T, size_t _Rows, size_t _Cols>
         struct xmmatrix
         {
-            static constexpr int Size = _Rows * _Cols;
-            static constexpr int Rows = _Rows;
-            static constexpr int Cols = _Cols;
+            static constexpr size_t Size = _Rows * _Cols;
+            static constexpr size_t Rows = _Rows;
+            static constexpr size_t Cols = _Cols;
             using Scalar = _T;
             using RowVectorType = xmvector<Scalar,Cols>;
 

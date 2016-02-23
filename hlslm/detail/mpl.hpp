@@ -2,23 +2,6 @@
 #include <utility>
 #include <type_traits>
 
-
-#ifndef STD_CONJECTION_DISJUNCTION
-#define STD_CONJECTION_DISJUNCTION 1
-namespace std
-{
-	template<class...> struct conjunction : std::true_type { };
-	template<class B1> struct conjunction<B1> : B1 { };
-	template<class B1, class... Bn>
-	struct conjunction<B1, Bn...> : std::conditional_t<B1::value != false, conjunction<Bn...>, B1> {};
-
-	template<class...> struct disjunction : std::false_type { };
-	template<class B1> struct disjunction<B1> : B1 { };
-	template<class B1, class... Bn>
-	struct disjunction<B1, Bn...> : std::conditional_t<B1::value != false, B1, disjunction<Bn...>> {};
-}
-#endif
-
 namespace mpl
 {
 	using std::integer_sequence;
@@ -28,6 +11,16 @@ namespace mpl
 	using std::make_integer_sequence;
 	using std::conditional;
 	using std::conditional_t;
+
+	template<class...> struct conjunction : std::true_type { };
+	template<class B1> struct conjunction<B1> : B1 { };
+	template<class B1, class... Bn>
+	struct conjunction<B1, Bn...> : std::conditional_t<B1::value != false, conjunction<Bn...>, B1> {};
+
+	template<class...> struct disjunction : std::false_type { };
+	template<class B1> struct disjunction<B1> : B1 { };
+	template<class B1, class... Bn>
+	struct disjunction<B1, Bn...> : std::conditional_t<B1::value != false, B1, disjunction<Bn...>> {};
 
 	template< size_t I, class T >
 	struct get_element;

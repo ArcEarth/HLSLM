@@ -6,20 +6,10 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
+#include "DirectXMathIntrinsics.h"
 
-#include <DirectXMathIntrinsics.h>
-
-#ifndef _DXMEXT
-#define _DXMEXT
-#endif
-
-#include "integer_sequence.hpp"
-
-#define _MAKE_SWS_(name, ...) \
-		inline auto&& XM_CALLCONV name () { return this->swizzle<__VA_ARGS__ >(); } \
-		inline const auto&& XM_CALLCONV name() const { return this->swizzle<__VA_ARGS__ >(); } \
-
-
+#include "detail/mpl.hpp"
+#include "detail/swizzle_macro.h"
 
 namespace DirectX
 {
@@ -120,8 +110,8 @@ namespace DirectX
 
 			template <index_t... selectors>
 			inline const xmvector_swizzler<Scalar, selectors...>&& XM_CALLCONV swizzle() const;
-
-			#include "swizzles_def_2.h"
+            
+			#include "detail/wizzles_def_2.h"
 		};
 
 		template <typename _T>
@@ -388,7 +378,7 @@ namespace DirectX
 			using Scalar = _T;
 			static constexpr size_t Size = sizeof...(_SwzArgs);
 			static_assert(Size <= 4, "Swizzle element count out of 4");
-			static_assert(std::conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
+			static_assert(conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
 			using Indices = index_sequence<_SwzArgs...>;
 			using IndirectType = xmvector<Scalar, Size>;
 			using MergedIndices = conditional_t<Size == 4, Indices, overwrite_sequence_t<Indices, index_sequence<0, 1, 2, 3>>>;
@@ -575,7 +565,7 @@ namespace DirectX
 			struct check_swizzle_args
 			{
 				static_assert(sizeof...(_SwzArgs) <= 4, "Swizzle element count out of 4");
-				static_assert(std::conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value, "Swizzle index out of source vector size");
+				static_assert(conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value, "Swizzle index out of source vector size");
 			};
 
 			template <index_t... _SwzArgs, typename _T, size_t _Size>
