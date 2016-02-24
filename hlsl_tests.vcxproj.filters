@@ -89,6 +89,18 @@
     <ClInclude Include="hlslm\xmvector_constants.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
+    <ClInclude Include="hlslm\load_store.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\storage_classes.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmswizzler.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\hlsl.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Release\algorithms_generation_checks.asm">

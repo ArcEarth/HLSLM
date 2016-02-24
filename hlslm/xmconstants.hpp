@@ -5,8 +5,8 @@ namespace DirectX
 {
 	namespace hlsl
 	{
-		namespace constants
-		{
+		//namespace constants
+		//{
 			inline xmscalar<float> epsilon() { return xmscalar<float>(XMVectorSplatEpsilon()); }
 			inline xmscalar<float> infinity() { return xmscalar<float>(XMVectorSplatInfinity()); }
 			inline xmscalar<float> one() { return xmscalar<float>(XMVectorSplatOne()); }
@@ -40,8 +40,8 @@ namespace DirectX
 			{
 				return XMVectorSplatConstant(Numerator, detail::log_of_2(Quotient));
 			}
-		}
+		//}
 
-		using namespace constants;
+		//using namespace constants;
 	}
 }

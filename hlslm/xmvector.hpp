@@ -1,4 +1,6 @@
 #pragma once
+#ifndef _HLSL_XM_VECTOR_H
+#define _HLSL_XM_VECTOR_H
 
 #define __AVX2__ 1
 #define __AVX__  1
@@ -6,10 +8,16 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
-#include "DirectXMathIntrinsics.h"
+//#include "DirectXMathIntrinsics.h"
+#ifndef _DXMEXT
+#define _DXMEXT
+#endif
 
+#define _XM_VECTOR_USE_LOAD_STORE_HELPER_
 #include "detail/mpl.hpp"
 #include "detail/swizzle_macro.h"
+
+#include "vector_traits.hpp"
 
 namespace DirectX
 {
@@ -24,12 +32,18 @@ namespace DirectX
 		template <typename _T>
 		struct xmscalar;
 
+		template <typename _T, size_t _Size>
+		struct xmvector;
+
 		template <typename _T, index_t... _SwzArgs>
-		struct xmvector_swizzler;
+		struct xmswizzler;
 
 		namespace detail
 		{
-			inline XMVECTOR replicate_scalar(int s)
+			template <typename _Ty, bool aligned, size_t cols, size_t rows = 1>
+			struct storage_helper;
+
+			inline XMVECTOR replicate_scalar(uint s)
 			{
 				return XMVectorReplicateInt(s);
 			}
@@ -77,6 +91,7 @@ namespace DirectX
 		{
 			//using components_name_enums = detail::components_name_enums;
 
+			using this_type = xmvector<_T, _Size>;
 			static constexpr size_t Size = _Size;
 			using Scalar = _T;
 			typedef xmvector SelfType;
@@ -117,10 +132,39 @@ namespace DirectX
 			}
 
 			template <index_t... selectors>
-			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmvector_swizzler<_T, selectors...>>&& XM_CALLCONV swizzle();
+			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>&& XM_CALLCONV swizzle();
 
 			template <index_t... selectors>
-			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmvector_swizzler<_T, selectors...>>&& XM_CALLCONV swizzle() const;
+			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>&& XM_CALLCONV swizzle() const;
+
+#if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
+
+			template <typename _Ty>
+			inline xmvector(const _Ty& memery_vector, typename enable_memery_traits_t<_Ty>::void_type *junk = nullptr)
+			{
+				using traits = memery_vector_traits<_Ty>;
+				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
+				*this = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+			}
+
+
+			// Load from storage types
+			template <typename _Ty>
+			inline typename enable_memery_traits_t<_Ty>::void_type operator=(const _Ty& memery_vector)
+			{
+				using traits = memery_vector_traits<_Ty>;
+				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
+				*this = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+			}
+
+			template <typename _Ty>
+			inline typename enable_memery_traits_t<_Ty>::void_type XM_CALLCONV store(_Ty& storage) const
+			{
+				using traits = memery_vector_traits<_Ty>;
+				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
+				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), *this);
+			}
+#endif
 
 			#include "detail/swizzles_def_4.h"
 		};
@@ -167,6 +211,7 @@ namespace DirectX
 		};
 
 		// Untyped Get Set implementation
+		// struct storage_helper defination
 		namespace detail
 		{
 			template <> inline float XM_CALLCONV get<float, _x>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetX(xmv); }
@@ -208,6 +253,90 @@ namespace DirectX
 			template <>	inline FXMVECTOR XM_CALLCONV set_ptr<uint, _y>(FXMVECTOR xmv, uint* ptr) { return _DXMEXT XMVectorSetIntYPtr(xmv, ptr); }
 			template <>	inline FXMVECTOR XM_CALLCONV set_ptr<uint, _z>(FXMVECTOR xmv, uint* ptr) { return _DXMEXT XMVectorSetIntZPtr(xmv, ptr); }
 			template <>	inline FXMVECTOR XM_CALLCONV set_ptr<uint, _w>(FXMVECTOR xmv, uint* ptr) { return _DXMEXT XMVectorSetIntWPtr(xmv, ptr); }
+
+			template <bool aligned>
+			struct storage_helper <float, aligned, false, 1> {
+				static auto load(const float* pSource) { return xmscalar<float>(XMVectorReplicatePtr(pSource)); }
+				static void store(float* pDst, const xmscalar<float> xmv) { XMStoreFloat(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, false, 2> {
+				static auto load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 2> xmv) { XMStoreFloat2(reinterpret_cast<XMFLOAT2*>(pDst), xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, false, 3> {
+				static auto load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 3> xmv) { XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(pDst), xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, false, 4> {
+				static auto load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 4> xmv) { XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(pDst), xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, true, 2> {
+				static auto load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2A(reinterpret_cast<const XMFLOAT2A*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 2> xmv) { XMStoreFloat2A(reinterpret_cast<XMFLOAT2A*>(pDst), xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, true, 3> {
+				static auto load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3A(reinterpret_cast<const XMFLOAT3A*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 3> xmv) { XMStoreFloat3A(reinterpret_cast<XMFLOAT3A*>(pDst), xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <float, true, 4> {
+				static auto load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4A(reinterpret_cast<const XMFLOAT4A*>(pSource))); }
+				static void store(float* pDst, const xmvector<float, 4> xmv) { XMStoreFloat4A(reinterpret_cast<XMFLOAT4A*>(pDst), xmv.v); }
+			};
+
+			template <bool aligned>
+			struct storage_helper <uint, aligned, false, 1> {
+				static auto load(const uint* pSource) { return xmscalar<uint>(XMVectorReplicateIntPtr(pSource)); }
+				static void store(uint* pDst, const xmscalar<uint> xmv) { XMStoreInt(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <uint, false, 2> {
+				static auto load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2(pSource)); }
+				static void store(uint* pDst, const xmvector<uint, 2> xmv) { XMStoreInt2(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <uint, false, 3> {
+				static auto load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3(pSource)); }
+				static void store(uint* pDst, const xmvector<uint, 3> xmv) { XMStoreInt3(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <uint, false, 4> {
+				static auto load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4(pSource)); }
+				static void store(uint* pDst, const  xmvector<uint, 4> xmv) { XMStoreInt4(pDst, xmv.v); }
+			};
+			template <>
+			struct storage_helper <uint, true, 2> {
+				static auto load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2A(pSource)); }
+				static void store(uint* pDst, const  xmvector<uint, 2> xmv) { XMStoreInt2A(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <uint, true, 3> {
+				static auto load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3A(pSource)); }
+				static void store(uint* pDst, const xmvector<uint, 3> xmv) { XMStoreInt3A(pDst, xmv.v); }
+			};
+
+			template <>
+			struct storage_helper <uint, true, 4> {
+				static auto load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4A(pSource)); }
+				static void store(uint* pDst, const  xmvector<uint, 4> xmv) { XMStoreInt4A(pDst, xmv.v); }
+			};
+
 		}
 
 		using xmvector1f = xmvector<float, 1>;
@@ -219,372 +348,7 @@ namespace DirectX
 		using xmvector2i = xmvector<uint, 2>;
 		using xmvector3i = xmvector<uint, 3>;
 		using xmvector4i = xmvector<uint, 4>;
-
-		namespace detail
-		{
-			using std::conditional;
-
-			template <typename IS>
-			struct swizzle_impl;
-
-			template <index_t... SwizzleArgs>
-			struct swizzle_impl<index_sequence<SwizzleArgs...>>
-			{
-				inline static XMVECTOR XM_CALLCONV invoke(FXMVECTOR v)
-				{
-					return _DXMEXT XMVectorSwizzle<uint32_t(SwizzleArgs)...>(v);
-				}
-			};
-
-			template <typename IS>
-			struct permute_impl;
-
-			template <index_t... PermutesArgs>
-			struct permute_impl<index_sequence<PermutesArgs...>>
-			{
-				inline static XMVECTOR XM_CALLCONV invoke(FXMVECTOR v0, FXMVECTOR v1)
-				{
-					return _DXMEXT XMVectorPermute<uint32_t(PermutesArgs)...>(v0, v1);
-				}
-			};
-
-			template <typename IS>
-			struct select_impl;
-
-			template <index_t... Masks>
-			struct select_impl<index_sequence<Masks...>>
-			{
-				static constexpr uint32_t zero_or_all(index_t val)
-				{
-					return val ? 0xFFFFFFFF : 0;
-				}
-
-				inline static XMVECTOR XM_CALLCONV invoke(FXMVECTOR v0, FXMVECTOR v1)
-				{
-					XMVECTOR control = XMVectorSetInt(zero_or_all(Masks)...);
-					return XMVectorSelect(v0, v1, control);
-				}
-			};
-
-			template <typename Mask, typename IS>
-			struct sequence_to_mask_impl;
-
-			template <index_t... Masks, index_t Head, index_t... Indices>
-			struct sequence_to_mask_impl<index_sequence<Masks...>, index_sequence<Head, Indices...>>
-				: public sequence_to_mask_impl< set_element_t<Head, 1, index_sequence<Masks...>>, index_sequence<Indices...>>
-			{};
-
-			template <index_t... Masks>
-			struct sequence_to_mask_impl<index_sequence<Masks...>, index_sequence<>>
-			{
-				using type = index_sequence<Masks...>;
-			};
-
-			template <typename IS>
-			struct sequence_to_mask : public sequence_to_mask_impl<index_sequence<0, 0, 0, 0>, IS>
-			{};
-
-			template <typename IS1, typename IS2>
-			struct concat_swizzle_sequence;
-
-			template <index_t... IS1, index_t... IS2>
-			struct concat_swizzle_sequence <index_sequence<IS1...>, index_sequence<IS2...>>
-			{
-				using type = index_sequence<(get_element<IS2, index_sequence<IS1...>>::value)...>;
-			};
-
-			template <typename IS>
-			struct is_permutation_sequence;
-
-			template <index_t Divisor, typename IS1>
-			struct div_sequence;
-
-			template <index_t Divisor, index_t... Vals>
-			struct div_sequence<Divisor, index_sequence<Vals...>>
-			{
-				using quotient = index_sequence<(Vals / Divisor)...>;
-				using remainder = index_sequence<(Vals % Divisor)...>;
-			};
-
-			// sort the sequence IS1, swizzling IS2 as the way to form IS1
-			template <typename IS1, typename IS2>
-			struct dual_sort_sequence;
-
-			template <size_t... IS1, size_t... IS2>
-			struct dual_sort_sequence<index_sequence<IS1...>, index_sequence<IS2...>>
-			{
-				static_assert(sizeof...(IS1) == sizeof...(IS2), "Sequence length must agree");
-				using mad_seq = typename index_sequence<(IS1 * 4 + IS2)...>::type;
-				using sorted_mad = typename sort_sequence<mad_seq>::type;
-				using type = typename div_sequence<4, sorted_mad>::remainder;
-			};
-
-
-			template <typename IS>
-			struct inverse_swizzle_sequence;
-
-			template <typename IS1, typename IS2>
-			using concat_swizzle_sequence_t = typename concat_swizzle_sequence<IS1, IS2>::type;
-
-		}
-
-		namespace detail
-		{
-			template <typename _T, typename IS>
-			struct swizzle_from_indecis;
-
-			template <typename _T, index_t... _SwzArgs>
-			struct swizzle_from_indecis<_T, index_sequence<_SwzArgs...>>
-			{
-				using type = xmvector_swizzler<_T, _SwzArgs...>;
-			};
-
-			template <typename _T, typename IS>
-			using swizzle_from_indecis_t = typename swizzle_from_indecis<_T, IS>::type;
-
-			template <typename XMV_S1, index_t... SW2>
-			struct xmvector_swizzler_concat;
-
-			template <typename _T, index_t... SW1, index_t... SW2>
-			struct xmvector_swizzler_concat<xmvector_swizzler<_T, SW1...>, SW2...>
-			{
-				using type = swizzle_from_indecis_t <
-					_T,
-					concat_swizzle_sequence_t <
-						index_sequence<SW1...>,
-						index_sequence<SW2... >> >;
-			};
-
-			template <typename XMV_S1, index_t... SW2>
-			using xmvector_swizzler_concat_t = typename xmvector_swizzler_concat<XMV_S1, SW2...>::type;
-
-			//using test = xmvector_swizzler_concat_t<xmvector_swizzler<float, 1, 2, 3>, 3, 2, 1>;
-		}
-
-
-		// This type is a wrapper for containning the swizzle and mask information of a xmvector
-		// Your should never construct this type like xmvector_swizzler<float,_y,_z> xmv;
-		// instead, use function swizzle on an existed xmvector to construct
-		// helps to optimize in the case case of masked/swizzled assignment: v.yzw = p, v.wyz = p.xzw;
-		template <typename _T, index_t... _SwzArgs>
-		struct xmvector_swizzler
-		{
-			using this_type = xmvector_swizzler<_T, _SwzArgs...>;
-			using Scalar = _T;
-			static constexpr size_t Size = sizeof...(_SwzArgs);
-			static_assert(Size <= 4, "Swizzle element count out of 4");
-			static_assert(conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
-			using Indices = index_sequence<_SwzArgs...>;
-			using IndirectType = xmvector<Scalar, Size>;
-			using MergedIndices = conditional_t<Size == 4, Indices, overwrite_sequence_t<Indices, index_sequence<0, 1, 2, 3>>>;
-
-			XMVECTOR v;
-
-			xmvector_swizzler() = delete;
-			//xmvector_swizzler(const this_type& rhs) = delete;
-			//void operator=(const this_type& rhs) = delete;
-
-			inline IndirectType XM_CALLCONV eval() const
-			{
-				IndirectType ret;
-				ret.v = detail::swizzle_impl<MergedIndices>::invoke(v);
-				return ret;
-			}
-
-			inline XM_CALLCONV operator IndirectType() const
-			{
-				return eval();
-			}
-
-			// Scalar Selection 
-			template <typename U = Scalar>
-			inline XM_CALLCONV operator enable_if_t<Size == 1 && std::is_same<U,Scalar>::value, U>() const
-			{
-				return detail::get<Scalar, _SwzArgs...>(v);
-			}
-
-			template <typename U = Scalar>
-			inline enable_if_t<Size == 1 && std::is_same<U, Scalar>::value> XM_CALLCONV operator= (U scalar)
-			{
-				v = detail::set<Scalar, _SwzArgs...>(v, scalar);
-			}
-
-			template <index_t... _NewSwzArgs>
-			inline const auto&& XM_CALLCONV swizzle() const {
-				static_assert(valiad_swizzle_args<Size, _NewSwzArgs...>::value, "Swizzle index out of range");
-				return reinterpret_cast<const detail::xmvector_swizzler_concat_t<this_type, _NewSwzArgs...>&&>(*this);
-			}
-
-			template <index_t... _NewSwzArgs>
-			inline auto&& XM_CALLCONV swizzle() {
-				static_assert(valiad_swizzle_args<Size, _NewSwzArgs...>::value, "Swizzle index out of range");
-				return reinterpret_cast<detail::xmvector_swizzler_concat_t<this_type, _NewSwzArgs...>&&>(*this);
-			}
-
-#include "detail/swizzles_def_4.h"
-
-			// When src and dst swzzle are same, this becomes an XMVectorSelect Masked Assignment Problem
-			// v4.zxy = v4.zxy
-			template <typename U = Scalar>
-			inline enable_if_t<(Size < 4) && std::is_same<U,Scalar>::value>
-				XM_CALLCONV
-				assign(const xmvector_swizzler<U, _SwzArgs...>&& src)
-			{
-				using mask_seq = typename detail::sequence_to_mask<index_sequence<_SwzArgs...>>::type;
-				this->v = detail::select_impl<mask_seq>::invoke(src.v, this->v);
-			}
-
-			// any to any assignment, expcept swz == src_swz
-			// v4.yz = v3.zy;
-			template <index_t... _SrcSwz>
-			inline enable_if_t<(Size < 4) && !std::is_same<index_sequence<_SwzArgs...>, index_sequence<_SrcSwz...>>::value && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
-				XM_CALLCONV
-				assign(const xmvector_swizzler<Scalar, _SrcSwz...>&& src)
-			{
-				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_SwzArgs...>, index_sequence<(_SrcSwz + 4)...>>::type;
-
-				this->v = detail::permute_impl<permute_sequence>::invoke(this->v, src.v);
-			}
-
-			// 4 to 4 assignment
-			// v4.wyxz = v4.yxwz;
-			template <index_t... _SrcSwz>
-			inline enable_if_t<sizeof...(_SwzArgs) == 4 && sizeof...(_SrcSwz) == 4>
-				XM_CALLCONV
-				assign(const xmvector_swizzler<Scalar, _SrcSwz...>&& src)
-			{
-				using permute_sequence = typename indirect_assign<index_sequence<-1, -1, -1, -1>, index_sequence<_SwzArgs...>, index_sequence<_SrcSwz...>>::type;
-				this->v = detail::swizzle_impl<permute_sequence>::invoke(src.v);
-			}
-
-			// identity to any assignment
-			// v4.yxz = v3;
-			template <index_t SrcSize>
-			inline enable_if_t<sizeof...(_SwzArgs) == SrcSize>
-				XM_CALLCONV
-				assign(const xmvector<Scalar, SrcSize> src)
-			{
-				using srcScalarpe = detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<SrcSize>>;
-				auto&& srcv = reinterpret_cast<const srcScalarpe&&>(src);
-				this->assign(std::move(srcv));
-			}
-
-			// identity to any assignment
-			// v4.yxz = v3;
-			template <index_t SrcSize>
-			inline enable_if_t<sizeof...(_SwzArgs) == SrcSize>
-			XM_CALLCONV	operator=(const xmvector<Scalar, SrcSize> src)
-			{ this->assign(std::move(src));	}
-
-			// When src and dst swzzle are same, this becomes an XMVectorSelect Masked Assignment Problem
-			// v4.zxy = v4.zxy
-			template <typename U = Scalar>
-			inline enable_if_t<(Size < 4) && std::is_same<U, Scalar>::value>
-			XM_CALLCONV operator=(const xmvector_swizzler<U, _SwzArgs...>&& src)
-			{ this->assign(std::move(src)); }
-
-			// any to any assignment
-			// v4.yz = v3.zy;
-			template <index_t... _SrcSwz>
-			inline enable_if_t<(Size < 4) && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
-			XM_CALLCONV operator=(const xmvector_swizzler<Scalar, _SrcSwz...>&& src)
-			{ this->assign(std::move(src)); }
-
-			// 4 to 4 assignment
-			// v4.wyxz = v4.yxwz;
-			template <index_t... _SrcSwz>
-			inline enable_if_t<sizeof...(_SwzArgs) == 4 && sizeof...(_SrcSwz) == 4>
-			XM_CALLCONV	operator=(const xmvector_swizzler<Scalar, _SrcSwz...>&& src)
-			{ this->assign(std::move(src)); }
-		};
-
-		namespace detail
-		{
-			// any to any assignment
-			// v4.yz = v3.zy;
-			template <typename _Ty, index_t... _DstSwz, index_t... _SrcSwz>
-			inline enable_if_t<sizeof...(_DstSwz) == sizeof...(_SrcSwz), XMVECTOR>
-				XM_CALLCONV
-				swizzle_assign(xmvector_swizzler<_Ty, _DstSwz...>&& dst, xmvector_swizzler<_Ty, _SrcSwz...>&& src)
-			{
-				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_DstSwz...>, index_sequence<(_SrcSwz + 4)...>>::type;
-
-				return detail::permute_impl<permute_sequence>::invoke(dst.v, src.v);
-			}
-
-			// 4 to 4 assignment
-			// v4.wyxz = v4.yxwz;
-			template <typename _Ty, index_t... _DstSwz, index_t... _SrcSwz>
-			inline enable_if_t<sizeof...(_DstSwz) == 4 && sizeof...(_DstSwz) == 4, XMVECTOR>
-				XM_CALLCONV
-				swizzle_assign(xmvector_swizzler<_Ty, _DstSwz...>&& dst, xmvector_swizzler<_Ty, _SrcSwz...>&& src)
-			{
-				using permute_sequence = typename indirect_assign<index_sequence<-1, -1, -1, -1>, index_sequence<_DstSwz...>, index_sequence<_SrcSwz...>>::type;
-				return detail::swizzle_impl<permute_sequence>::invoke(src.v);
-			}
-
-			// identity to any assignment
-			// v4.yxz = v3;
-			template <typename _Ty, index_t... _DstSwz, index_t SrcSize>
-			inline enable_if_t<sizeof...(_DstSwz) == SrcSize, XMVECTOR>
-				XM_CALLCONV
-				swizzle_assign(xmvector_swizzler<_Ty, _DstSwz...>&&  dst, xmvector<_Ty, SrcSize>&& src)
-			{
-				using src_type = detail::swizzle_from_indecis_t<_Ty, std::make_index_sequence<SrcSize>>;
-				auto&& srcv = reinterpret_cast<src_type&&>(src);
-				return swizzle_assign(std::move(dst), std::move(srcv));
-			}
-
-			// When src and dst swzzle are same, this becomes an XMVectorSelect Masked Assignment Problem
-			// v4.zxy = v4.zxy
-			template <typename _Ty, index_t... _SwzzleArgs>
-			inline XMVECTOR
-				XM_CALLCONV
-				swizzle_assign(xmvector_swizzler<_Ty, _SwzzleArgs...>&& dst, xmvector_swizzler<_Ty, _SwzzleArgs...>&& src)
-			{
-				using mask_seq = typename detail::sequence_to_mask<index_sequence<_SwzzleArgs...>>::type;
-				return detail::select_impl<mask_seq>::invoke(src.v, dst.v);
-			}
-		}
-
-		namespace detail
-		{
-
-			template <index_t... _SwzArgs, typename _T, size_t _Size>
-			inline auto&& XM_CALLCONV swizzle(const xmvector<_T, _Size>& xmv) {
-				static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value,"Swizzle index out of range");
-				return reinterpret_cast<const xmvector_swizzler<_T, _SwzArgs...>&&>(xmv);
-			}
-
-			template <index_t... _SwzArgs, typename _T, size_t _Size>
-			inline auto&& XM_CALLCONV swizzle(xmvector<_T, _Size>& xmv) {
-				static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
-				return reinterpret_cast<xmvector_swizzler<_T, _SwzArgs...>&&>(xmv);
-			}
-
-			template <index_t... _SwzArgs, typename _T, index_t... _PrevSwzArgs>
-			inline auto&& XM_CALLCONV swizzle(xmvector_swizzler<_T, _PrevSwzArgs...>&& xmv) {
-				static constexpr size_t _Size = sizeof...(_PrevSwzArgs);
-				static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
-				using src_t = xmvector_swizzler<_T, _PrevSwzArgs...>;
-				return reinterpret_cast<const detail::xmvector_swizzler_concat_t<src_t, _SwzArgs...>&&>(xmv);
-			}
-
-		}
-
-		template<typename _T, size_t _Size>
-		template<index_t ..._SwzArgs>
-		inline enable_if_t<valiad_swizzle_args<_Size, _SwzArgs...>::value,xmvector_swizzler<_T, _SwzArgs...>>&& XM_CALLCONV xmvector<_T, _Size>::swizzle()
-		{
-			return reinterpret_cast<xmvector_swizzler<_T, _SwzArgs...>&&>(*this);
-		}
-
-		template<typename _T, size_t _Size>
-		template<index_t ..._SwzArgs>
-		inline const enable_if_t<valiad_swizzle_args<_Size, _SwzArgs...>::value, xmvector_swizzler<_T, _SwzArgs...>>&& XM_CALLCONV xmvector<_T, _Size>::swizzle() const
-		{
-			return reinterpret_cast<const xmvector_swizzler<_T, _SwzArgs...>&&>(*this);
-		}
-
 }
 }
+
+#endif

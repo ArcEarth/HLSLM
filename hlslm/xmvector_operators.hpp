@@ -1,7 +1,7 @@
 #pragma once
 
-#include "xmvector.hpp"
 #include "vector_traits.hpp"
+#include "xmvector.hpp"
 
 namespace DirectX
 {

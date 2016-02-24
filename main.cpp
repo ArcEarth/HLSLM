@@ -1,6 +1,7 @@
 //#include "hlsl/hlsl.hpp"
-#include "hlslm\xmvector.hpp"
-#include "hlslm\xmvector_operators.hpp"
+
+#include "hlslm\hlsl.hpp"
+//#include "hlslm\load_store.hpp"
 
 #include <iostream>
 
@@ -35,12 +36,26 @@ struct test<integer_sequence<int,a...>, integer_sequence<int, b...>>
 
 using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 2, 3>>::type;
 
+inline xmvector3f cross(xmvector3f a, xmvector3f b)
+{
+	return a;
+}
+
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
 	xmvector2f v2;
 	xmscalar<float> vs;
 
-	float kf = v2.x();
+	float f3arry[3];
+
+	xmvector3f v3 = f3arry;
+	v3 = f3arry;
+	DirectX::XMFLOAT3 f3;
+
+	v3.store(f3arry);
+	v3 = f3;
+
+	xmvector3f kf = cross(f3, f3arry);
 
 	v2 = v2.swizzle<0,1>().swizzle<1,0>();
 	v2 = v.xy().yx();
@@ -48,10 +63,20 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	v2 = v2 + v.xy();
 	v.xy() = v2 - v.yw();
 
-	xmvector4f result;
-	using cacate_t = decltype(result.xywz().wz());
+	
+	auto z = zero();
 
-	cacate_t vp;
+	v2 = v2 * z;
+	v2 = v2 + z;
+
+	auto veq = v2 == v2;
+	auto vgt = v2 > v2;
+	nor(veq, vgt);
+
+	xmvector4f result;
+	using cacate_t = std::remove_reference_t<decltype(result.xywz().zw())>;
+
+	//cacate_t vp;
 	xmscalar<float> xv(x);
 	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
 	result.xz() = v.xy();

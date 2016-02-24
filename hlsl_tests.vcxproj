@@ -117,8 +117,12 @@
     <ClInclude Include="hlslm\detail\swizzles_def_3.h" />
     <ClInclude Include="hlslm\detail\swizzles_def_4.h" />
     <ClInclude Include="hlslm\detail\swizzle_macro.h" />
+    <ClInclude Include="hlslm\hlsl.hpp" />
+    <ClInclude Include="hlslm\load_store.hpp" />
+    <ClInclude Include="hlslm\storage_classes.hpp" />
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
+    <ClInclude Include="hlslm\xmswizzler.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
     <ClInclude Include="hlslm\xmvector_constants.hpp" />
     <ClInclude Include="hlslm\xmvector_operators.hpp" />
