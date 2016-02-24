@@ -8,7 +8,7 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
-//#include "DirectXMathIntrinsics.h"
+#include "DirectXMathIntrinsics.h"
 #ifndef _DXMEXT
 #define _DXMEXT
 #endif
@@ -36,7 +36,7 @@ namespace DirectX
 		struct xmvector;
 
 		template <typename _T, index_t... _SwzArgs>
-		struct xmswizzler;
+		struct xmselector;
 
 		namespace detail
 		{
@@ -82,6 +82,21 @@ namespace DirectX
 				static constexpr bool value = (sizeof...(_SwzArgs) <= 4) && (conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value);
 			};
 
+			using std::conditional;
+			using std::conditional_t;
+			using std::is_same;
+
+			template <typename Scalar, size_t Size>
+			using intrinsic_vector_t = 
+				conditional_t< sizeof(Scalar)*Size <= 16,
+				DirectX::XMVECTOR,
+				conditional_t<is_same<float, Scalar>::value,
+					__m256,
+					conditional_t<is_same<double, Scalar>::value,
+						__m256d,
+						__m256i>
+					>
+				>;
 		}
 
 		using detail::valiad_swizzle_args;
@@ -95,14 +110,15 @@ namespace DirectX
 			static constexpr size_t Size = _Size;
 			using Scalar = _T;
 			typedef xmvector SelfType;
+			using intrinsic_vector = detail::intrinsic_vector_t<_T, _Size>;
 
-			static_assert(Size > 0 && Size <= 4, "Instantiate xmvector of dimension 0 or greater than 4.");
+			static_assert(Size > 0 && sizeof(Scalar) * Size <= 16, "Instantiate xmvector of dimension 0 or greater than 4.");
 
 			XMVECTOR v;
 
 			inline xmvector() = default;
 
-			inline explicit xmvector(FXMVECTOR xmv) {
+			inline xmvector(FXMVECTOR xmv) {
 				v = xmv;
 			}
 
@@ -115,6 +131,9 @@ namespace DirectX
 			inline explicit xmvector(xmvector<Scalar, vSize> v0, enable_if_t<Size == vSize + 1, Scalar> s) {
 				v = detail::set_element<Size - 1>(v0, s);
 			}
+
+			inline operator XMVECTOR () const
+			{ return v; }
 
 			template <int _NewSize, typename _NewType = Scalar>
 			inline xmvector<_NewType, _NewSize> as() const {
@@ -132,10 +151,23 @@ namespace DirectX
 			}
 
 			template <index_t... selectors>
-			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>&& XM_CALLCONV swizzle();
+			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>&& XM_CALLCONV swizzle();
 
 			template <index_t... selectors>
-			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>&& XM_CALLCONV swizzle() const;
+			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>&& XM_CALLCONV swizzle() const;
+
+			// Dynamic swizzlers
+			inline auto XM_CALLCONV swizzle(uint _x) const
+			{ return xmscalar<Scalar>(_DXMEXT XMVectorSwizzle(v, _x, _x, _x, _x)); }
+
+			inline auto XM_CALLCONV swizzle(uint _x, uint _y) const
+			{ return xmvector<Scalar, 2>( _DXMEXT XMVectorSwizzle(v, _x, _y, 2, 3)); }
+
+			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z) const
+			{ return xmvector<Scalar, 3>( _DXMEXT XMVectorSwizzle(v, _x, _y, _z, 3)); }
+
+			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z, uint _w) const
+			{ return xmvector<Scalar, 4>( _DXMEXT XMVectorSwizzle(v,_x,_y,_z,_w)); }
 
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
 
@@ -166,18 +198,18 @@ namespace DirectX
 			}
 #endif
 
-			#include "detail/swizzles_def_4.h"
+			#include "detail/special_swizzle.h"
 		};
 
-		template <typename _T>
-		// Specialization for Sizeless (Unkown) vector
-		struct xmvector<_T, 0>
-		{
-			static constexpr size_t Size = 0;
-			using Scalar = _T;
-			typedef xmvector SelfType;
-			XMVECTOR v;
-		};
+		//template <typename _T>
+		//// Specialization for Sizeless (Unkown) vector
+		//struct xmvector<_T, 0>
+		//{
+		//	static constexpr size_t Size = 0;
+		//	using Scalar = _T;
+		//	typedef xmvector SelfType;
+		//	XMVECTOR v;
+		//};
 
 		template <typename _T>
 		struct xmscalar : public xmvector<_T, 1>

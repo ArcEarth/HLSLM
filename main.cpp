@@ -38,7 +38,7 @@ using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 
 
 inline xmvector3f cross(xmvector3f a, xmvector3f b)
 {
-	return a;
+	return xmvector3f(DirectX::XMVector3Cross(a.v, b.v));
 }
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
@@ -53,20 +53,26 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	DirectX::XMFLOAT3 f3;
 
 	v3.store(f3arry);
-	v3 = f3;
+	v3.zyx() = f3;
+	v3 = v3 + f3;
 
-	xmvector3f kf = cross(f3, f3arry);
+	//v3 = f3 + f3arry;
 
+	//using test_t = decltype(v.xy().yx().xy().yx());
+
+	xmvector3f kf = cross(f3, DirectX::g_XMIdentityR0.v);
+
+	v2 = v2 + v2;
 	v2 = v2.swizzle<0,1>().swizzle<1,0>();
 	v2 = v.xy().yx();
 	v2 = v2 + vs;
 	v2 = v2 + v.xy();
-	v.xy() = v2 - v.yw();
-
+	v.xy() = v2 + v.zw();
+	v2.yx() = v2.yx();
 	
 	auto z = zero();
 
-	v2 = v2 * z;
+	v2 = v2 + z;
 	v2 = v2 + z;
 
 	auto veq = v2 == v2;
@@ -74,12 +80,11 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	nor(veq, vgt);
 
 	xmvector4f result;
-	using cacate_t = std::remove_reference_t<decltype(result.xywz().zw())>;
 
 	//cacate_t vp;
 	xmscalar<float> xv(x);
 	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
-	result.xz() = v.xy();
+	result.yz() = v.xy();
 	//using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
 	//result.v = detail::swizzle_assign(v.swizzle<0>(), xv.swizzle<0>());
 	return result;

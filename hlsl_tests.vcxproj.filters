@@ -83,15 +83,6 @@
     <ClInclude Include="hlslm\detail\swizzles_def_4.h">
       <Filter>hlslm\details</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmvector_operators.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\xmvector_constants.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\load_store.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\storage_classes.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
@@ -99,6 +90,21 @@
       <Filter>hlslm</Filter>
     </ClInclude>
     <ClInclude Include="hlslm\hlsl.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\special_swizzle.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\detail\old_stuff.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmoperators.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmconstants.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\load.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
   </ItemGroup>

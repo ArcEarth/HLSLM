@@ -11,8 +11,12 @@ namespace DirectX
 {
 namespace hlsl
 {
+	// the corresponding xmvector type of a memery vector
 	template <typename _Ty>
-	inline typename memery_vector_traits<_Ty>::type load(const _Ty& memery_vector)
+	using if_memery_vector_type = typename enable_memery_traits_t<_Ty>::type;
+
+	template <typename _Ty>
+	inline if_memery_vector_type<_Ty> load(const _Ty& memery_vector)
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
@@ -20,7 +24,7 @@ namespace hlsl
 	}
 
 	template <typename _Ty>
-	inline typename memery_vector_traits<_Ty>::type load_a(const _Ty& memery_vector)
+	inline if_memery_vector_type<_Ty> load_a(const _Ty& memery_vector)
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, true, traits::cols, traits::rows>;
@@ -28,7 +32,7 @@ namespace hlsl
 	}
 
 	template <typename _Ty>
-	inline void XM_CALLCONV store(_Ty& memery_vector, const typename memery_vector_traits<_Ty>::type v)
+	inline void XM_CALLCONV store(_Ty& memery_vector, const if_memery_vector_type<_Ty> v)
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
@@ -36,7 +40,7 @@ namespace hlsl
 	}
 
 	template <typename _Ty>
-	inline void XM_CALLCONV store_a(_Ty& memery_vector, const typename memery_vector_traits<_Ty>::type v)
+	inline void XM_CALLCONV store_a(_Ty& memery_vector, const if_memery_vector_type<_Ty> v)
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, true, traits::cols, traits::rows>;
@@ -46,13 +50,14 @@ namespace hlsl
 	template <typename _Scalar>
 	inline std::enable_if_t<scalar_traits<_Scalar>::value, xmscalar<_Scalar>> load(_Scalar scalar)
 	{ return xmscalar<_Scalar>(detail::replicate_scalar(scalar)); }
-
+	//template <typename _Ty, index_t... _SwzArgs>
+	//typename xmvector<_Ty,sizeof...(_SwzArgs)> load(const xmselector<_Ty, _SwzArgs...>&& swzizzler)
+	//{ return swzizzler.eval(); }
 	template <typename _Ty, index_t... _SwzArgs>
-	typename xmvector<_Ty,sizeof...(_SwzArgs)> load(const xmswizzler<_Ty, _SwzArgs...>&& swzizzler)
+	typename xmvector<_Ty, sizeof...(_SwzArgs)> load(const xmselector<_Ty, _SwzArgs...>& swzizzler)
 	{ return swzizzler.eval(); }
-
 	template <typename _Ty, index_t... _SwzArgs>
-	typename void store(xmswizzler<_Ty, _SwzArgs...>&& swzizzler, const xmvector<_Ty, sizeof...(_SwzArgs)> v)
+	typename void store(xmselector<_Ty, _SwzArgs...>&& swzizzler, const xmvector<_Ty, sizeof...(_SwzArgs)> v)
 	{
 		swzizzler.assign(v);
 	}

@@ -87,5 +87,37 @@ namespace hlsl
 		static constexpr int cols = 4;
 		using scalar = float;
 	};
+
+	template <>
+	struct vector_traits<XMVECTORF32>
+	{
+		static constexpr int rows = 1;
+		static constexpr int cols = 4;
+		using scalar = float;
+	};
+
+	template <>
+	struct vector_traits<XMVECTORU32>
+	{
+		static constexpr int rows = 1;
+		static constexpr int cols = 4;
+		using scalar = uint;
+	};
+
+	template <>
+	struct vector_traits<XMVECTORI32>
+	{
+		static constexpr int rows = 1;
+		static constexpr int cols = 4;
+		using scalar = int32_t;
+	};
+	
+	template <>
+	struct vector_traits<XMVECTORU8>
+	{
+		static constexpr int rows = 1;
+		static constexpr int cols = 16;
+		using scalar = uint8_t;
+	};
 }
 }

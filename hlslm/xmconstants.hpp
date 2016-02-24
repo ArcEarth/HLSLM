@@ -12,9 +12,9 @@ namespace DirectX
 			inline xmscalar<float> one() { return xmscalar<float>(XMVectorSplatOne()); }
 			inline xmscalar<float> zero() { return xmscalar<float>(XMVectorZero()); }
 			inline xmscalar<float> qnan() { return xmscalar<float>(XMVectorSplatQNaN()); }
-
-			inline xmscalar<uint> truei() { return xmscalar<uint>(XMVectorTrueInt()); }
-			inline xmscalar<uint> falsei() { return xmscalar<uint>(XMVectorZero()); }
+			inline xmscalar<float> pi() { return xmscalar<float>(g_XMPi.v); }
+			inline xmscalar<uint>  truei() { return xmscalar<uint>(XMVectorTrueInt()); }
+			inline xmscalar<uint>  falsei() { return xmscalar<uint>(XMVectorFalseInt()); }
 
 			namespace detail
 			{
