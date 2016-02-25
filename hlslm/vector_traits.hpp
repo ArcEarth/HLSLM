@@ -61,7 +61,7 @@ namespace DirectX
 		struct scalar_traits : public std::false_type {};
 
 		template <typename _Ty>
-		struct is_xmwrapper : public std::false_type {};
+		struct is_xmexpression : public std::false_type {};
 
 		template <typename _Ty, size_t _Size>
 		struct enable_hlsl_operator< xmvector<_Ty, _Size >>
@@ -115,13 +115,13 @@ namespace DirectX
 		struct is_xmvector<xmscalar<_Ty>> : std::true_type {};
 
 		template <typename _Ty, index_t... _SwzIdx>
-		struct is_xmwrapper<xmselector<_Ty, _SwzIdx...>> : public std::true_type {};
+		struct is_xmexpression<xmselector<_Ty, _SwzIdx...>> : public std::true_type {};
 
 		template <typename _Ty, size_t _SrcRows, size_t _SrcCols>
-		struct is_xmwrapper<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
+		struct is_xmexpression<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
 
 		template <typename _Ty, size_t _StRows, size_t _StCols, size_t _Rows, size_t _Cols>
-		struct is_xmwrapper<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
+		struct is_xmexpression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
 
 		//template <typename _Ty>
 		//struct is_xmvector<xmselector<_Ty, 0>> : std::true_type {};
@@ -141,6 +141,11 @@ namespace DirectX
         template <>
         struct scalar_traits<uint> : public std::true_type {
 			using type = uint;
+		};
+
+		template <>
+		struct scalar_traits<int32_t> : public std::true_type {
+			using type = int32_t;
 		};
 
         template <>
@@ -178,9 +183,6 @@ namespace DirectX
 			using lop = enable_hlsl_operator<lhs_t>;
 			using rop = enable_hlsl_operator<rhs_t>;
 
-			static constexpr bool overload = (lop::exclusive || rop::exclusive) && lop::inclusive && rop::inclusive;
-			static constexpr bool overload_assign = (lop::exclusive || rop::exclusive) && lop::inclusive && rop::inclusive;
-
 			using left_type = lhs_t;
 			using right_type = rhs_t;
 
@@ -200,6 +202,12 @@ namespace DirectX
 
 			using return_type = get_xm_type<scalar_type, rows, cols>;
 			using type = return_type;
+
+			static constexpr bool is_valiad_type = !std::is_same<type, void>::value && scalar_traits<scalar_type>::value;
+
+			static constexpr bool overload = is_valiad_type && (lop::exclusive || rop::exclusive) && lop::inclusive && rop::inclusive;
+			static constexpr bool overload_assign = is_valiad_type && lop::exclusive && rop::inclusive;
+
 		};
 
 		template <typename lhs_t, typename rhs_t>

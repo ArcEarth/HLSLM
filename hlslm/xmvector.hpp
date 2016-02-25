@@ -151,10 +151,10 @@ namespace DirectX
 			}
 
 			template <index_t... selectors>
-			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>&& XM_CALLCONV swizzle();
+			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>& XM_CALLCONV swizzle();
 
 			template <index_t... selectors>
-			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>&& XM_CALLCONV swizzle() const;
+			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>& XM_CALLCONV swizzle() const;
 
 			// Dynamic swizzlers
 			inline auto XM_CALLCONV swizzle(uint _x) const
@@ -214,7 +214,8 @@ namespace DirectX
 		template <typename _T>
 		struct xmscalar : public xmvector<_T, 1>
 		{
-			typedef xmscalar SelfType;
+			using base_type = xmvector<_T, 1>;
+			using this_type = xmscalar<_T>;
 
 			inline xmscalar() = default;
 
@@ -246,6 +247,20 @@ namespace DirectX
 		// struct storage_helper defination
 		namespace detail
 		{
+			template <uint32_t Elem>
+			// broadcast an element to all dimension, like xyzw -> xxxx
+			XMVECTOR split(FXMVECTOR xmv);
+
+			template <>
+			XMVECTOR split<0>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatX(xmv); }
+			template <>
+			XMVECTOR split<1>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatY(xmv); }
+			template <>
+			XMVECTOR split<2>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatZ(xmv); }
+			template <>
+			XMVECTOR split<3>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatW(xmv); }
+
+
 			template <> inline float XM_CALLCONV get<float, _x>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetX(xmv); }
 			template <> inline float XM_CALLCONV get<float, _y>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetY(xmv); }
 			template <> inline float XM_CALLCONV get<float, _z>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetZ(xmv); }

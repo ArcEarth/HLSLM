@@ -240,6 +240,7 @@ namespace DirectX
 			ret.v = XMVectorMultiply(xmfoward(lhs), xmfoward(rhs));
 			return ret;
 		}
+
 		template <typename lhs_t, typename rhs_t>
 		inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator/(const lhs_t& lhs, const rhs_t& rhs)
 		{
@@ -248,6 +249,15 @@ namespace DirectX
 			ret.v = XMVectorDivide(xmfoward(lhs), xmfoward(rhs));
 			return ret;
 		}
+
+		template <typename lhs_t, typename rhs_t>
+		std::enable_if_t<!is_mermery_type<lhs_t>::value && binary_operator_traits<lhs_t,rhs_t>::overload_assign>
+			operator += (lhs_t& lhs, const rhs_t& rhs)
+		{
+			lhs = lhs + rhs;
+		}
+
+
 		//template <typename lhs_t, typename rhs_t>
 		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator-(const lhs_t lhs, const rhs_t rhs)
 		//{

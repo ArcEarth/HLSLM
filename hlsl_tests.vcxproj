@@ -125,7 +125,7 @@
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmconstants.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
-    <ClInclude Include="hlslm\xmswizzler.hpp" />
+    <ClInclude Include="hlslm\xmselector.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
     <ClInclude Include="hlslm\xmoperators.hpp" />
     <ClInclude Include="hlsl\array_traits.hpp" />
