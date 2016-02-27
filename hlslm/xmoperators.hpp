@@ -20,14 +20,67 @@ namespace DirectX
 				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
 			};
 
-			template <typename _TScalar, typename _TVector, size_t _Size>
-			struct subtract;
+			template <size_t _Size>
+			struct add<uint, XMVECTOR, _Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorAddInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+			};
 
 			template <typename _TScalar, typename _TVector, size_t _Size>
-			struct multiply;
+			struct subtract
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorSubtract(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+			};
+
+			template <size_t _Size>
+			struct add<uint, XMVECTOR, _Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorSubtractInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+			};
 
 			template <typename _TScalar, typename _TVector, size_t _Size>
-			struct divide;
+			struct multiply
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorMultiply(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+
+			};
+
+			template <size_t _Size>
+			struct add<uint, XMVECTOR, _Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorMultiplyInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+			};
+
+			template <typename _TScalar, typename _TVector, size_t _Size>
+			struct divide
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorDivide(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+			};
+
 		}
 
 		namespace detail

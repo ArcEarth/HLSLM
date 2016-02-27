@@ -8,6 +8,7 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
+#include "DirectXMathExtend.h"
 #include "DirectXMathIntrinsics.h"
 #ifndef _DXMEXT
 #define _DXMEXT
@@ -87,15 +88,85 @@ namespace DirectX
 			using std::is_same;
 
 			template <typename Scalar, size_t Size>
-			using intrinsic_vector_t = 
-				conditional_t< sizeof(Scalar)*Size <= 16,
-				DirectX::XMVECTOR,
-				conditional_t<is_same<float, Scalar>::value,
-					__m256,
-					conditional_t<is_same<double, Scalar>::value,
-						__m256d,
-						__m256i>
-					>
+			struct intrinsic_vector
+			{
+				using type = void;
+			};
+
+			template <typename Scalar, size_t Size>
+			struct __mvector
+			{
+				Scalar m[Size];
+			};
+
+
+#if defined(_XM_SSE_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
+			template <>struct intrinsic_vector<float, 1> { using type = __m128; };
+			template <>struct intrinsic_vector<float, 2> { using type = __m128; };
+			template <>struct intrinsic_vector<float, 3> { using type = __m128; };
+			template <>struct intrinsic_vector<float, 4> { using type = __m128; };
+			template <>struct intrinsic_vector<float, 5> { using type = __m256; };
+			template <>struct intrinsic_vector<float, 6> { using type = __m256; };
+			template <>struct intrinsic_vector<float, 7> { using type = __m256; };
+			template <>struct intrinsic_vector<float, 8> { using type = __m256; };
+			template <>struct intrinsic_vector<double, 1> { using type = __m128d; };
+			template <>struct intrinsic_vector<double, 2> { using type = __m128d; };
+			template <>struct intrinsic_vector<double, 3> { using type = __m256d; };
+			template <>struct intrinsic_vector<double, 4> { using type = __m256d; };
+			template <size_t Size >struct intrinsic_vector<int32_t, Size> {
+				using scalar = int32_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<uint32_t, Size> {
+				using scalar = uint32_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<int64_t, Size> {
+				using scalar = int64_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<uint64_t, Size> {
+				using scalar = uint64_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<int16_t, Size> {
+				using scalar = int16_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<uint16_t, Size> {
+				using scalar = uint16_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<int8_t, Size> {
+				using scalar = int8_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+			template <size_t Size >struct intrinsic_vector<uint8_t, Size> {
+				using scalar = uint8_t;
+				using type = conditional_t<(Size*sizeof(scalar) <= 16), __m128i, conditional_t<(Size*sizeof(scalar) <= 32), __m256i, void>>;
+			};
+#elif defined(_XM_ARM_NEON_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
+			template <typename Scalar, size_t Size>
+			using intrinsic_vector_t =
+				conditional_t < is_same<float, Scalar>::value,
+				conditional_t<(Size <= 2), float32x2_t, float32x4_t>,
+				conditional_t < is_same<double, Scalar>::value,
+				conditional_t<(Size <= 2), __m128d, __m256d>,
+				conditional_t<(Size <= 2), __m128i, __m256i >> >;
+#else
+			template <typename Scalar, size_t Size>
+			using intrinsic_vector_t = Scarlar[Size];
+#endif
+
+			template <typename Scalar, size_t Size>
+			using intrinsic_vector_t = typename intrinsic_vector<Scalar, Size>::type;
+
+			template <typename Scalar, size_t Size>
+			using get_intrinsic_vector_t =
+				conditional_t<
+				is_same<intrinsic_vector_t<Scalar, Size>, void>::value,
+				intrinsic_vector_t<Scalar, Size>,
+				__mvector<Scalar, Size>
 				>;
 		}
 
@@ -110,7 +181,7 @@ namespace DirectX
 			static constexpr size_t Size = _Size;
 			using Scalar = _T;
 			typedef xmvector SelfType;
-			using intrinsic_vector = detail::intrinsic_vector_t<_T, _Size>;
+			using intrinsic_vector = detail::get_intrinsic_vector_t<_T, _Size>;
 
 			static_assert(Size > 0 && sizeof(Scalar) * Size <= 16, "Instantiate xmvector of dimension 0 or greater than 4.");
 
@@ -133,7 +204,9 @@ namespace DirectX
 			}
 
 			inline operator XMVECTOR () const
-			{ return v; }
+			{
+				return v;
+			}
 
 			template <int _NewSize, typename _NewType = Scalar>
 			inline xmvector<_NewType, _NewSize> as() const {
@@ -158,16 +231,24 @@ namespace DirectX
 
 			// Dynamic swizzlers
 			inline auto XM_CALLCONV swizzle(uint _x) const
-			{ return xmscalar<Scalar>(_DXMEXT XMVectorSwizzle(v, _x, _x, _x, _x)); }
+			{
+				return xmscalar<Scalar>(_DXMEXT XMVectorSwizzle(v, _x, _x, _x, _x));
+			}
 
 			inline auto XM_CALLCONV swizzle(uint _x, uint _y) const
-			{ return xmvector<Scalar, 2>( _DXMEXT XMVectorSwizzle(v, _x, _y, 2, 3)); }
+			{
+				return xmvector<Scalar, 2>(_DXMEXT XMVectorSwizzle(v, _x, _y, 2, 3));
+			}
 
 			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z) const
-			{ return xmvector<Scalar, 3>( _DXMEXT XMVectorSwizzle(v, _x, _y, _z, 3)); }
+			{
+				return xmvector<Scalar, 3>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, 3));
+			}
 
 			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z, uint _w) const
-			{ return xmvector<Scalar, 4>( _DXMEXT XMVectorSwizzle(v,_x,_y,_z,_w)); }
+			{
+				return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, _w));
+			}
 
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
 
@@ -198,7 +279,7 @@ namespace DirectX
 			}
 #endif
 
-			#include "detail/special_swizzle.h"
+#include "detail/special_swizzle.h"
 		};
 
 		//template <typename _T>
@@ -395,7 +476,7 @@ namespace DirectX
 		using xmvector2i = xmvector<uint, 2>;
 		using xmvector3i = xmvector<uint, 3>;
 		using xmvector4i = xmvector<uint, 4>;
-}
+	}
 }
 
 #endif
