@@ -12,20 +12,20 @@ namespace DirectX
 		namespace vector_math
 		{
 			template <typename _TScalar, size_t _Size>
-			struct add
-			{ static_assert(false, "This vector math is not implemented yet"); };
+			struct add;
+			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
-			struct subtract
-			{ static_assert(false, "This vector math is not implemented yet"); };
+			struct subtract;
+			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
-			struct multiply
-			{ static_assert(false, "This vector math is not implemented yet"); };
+			struct multiply;
+			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
-			struct divide
-			{ static_assert(false, "This vector math is not implemented yet"); };
+			struct divide;
+			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
-			struct madd
-			{ static_assert(false, "This vector math is not implemented yet"); };
+			struct madd;
+			//{ static_assert(false, "This vector math is not implemented yet"); };
 
 
 			template <size_t _Size>

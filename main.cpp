@@ -15,6 +15,16 @@ using namespace DirectX::hlsl;
 //	return result;
 //}
 
+struct PropertyTest
+{
+	int m_k;
+
+	const int& get_k() const { return m_k; }
+	int& get_k() { return m_k; }
+
+	__declspec(property(get = get_k)) int& k;
+};
+
 xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
 {
 	//float vx = swizzle<1>(v);
@@ -113,6 +123,12 @@ int __cdecl main( int argc, char *argv[] )
 	std::cout << f3.x << ',' << f3.y << ',' << f3.z << ',' << f3.w << std::endl;
 	//xmvector3f result = wzyx(xmv);
 
+	PropertyTest p;
+	auto& s = p.k;
+
+	const auto& cp = p;
+
+	auto& cs = p.k;
 	//xmvector2f sar = swizzle_assign(make_swizzler<2, 1>(result), make_swizzler<2, 1>(xmv));
 
 	//xmvector4i xmvi(1);

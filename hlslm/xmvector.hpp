@@ -8,6 +8,7 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
+#define _NO_SIMPLE_VECTORS
 #include <DirectXMathExtend.h>
 #include <DirectXMathIntrinsics.h>
 #ifndef _DXMEXT
