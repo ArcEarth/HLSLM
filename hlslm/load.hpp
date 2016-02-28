@@ -51,13 +51,13 @@ namespace hlsl
 	inline std::enable_if_t<scalar_traits<_Scalar>::value, xmscalar<_Scalar>> load(_Scalar scalar)
 	{ return xmscalar<_Scalar>(detail::replicate_scalar(scalar)); }
 	//template <typename _Ty, index_t... _SwzArgs>
-	//typename xmvector<_Ty,sizeof...(_SwzArgs)> load(const xmselector<_Ty, _SwzArgs...>&& swzizzler)
+	//typename xmvector<_Ty,sizeof...(_SwzArgs)> load(const xmswizzler<_Ty, _SwzArgs...>&& swzizzler)
 	//{ return swzizzler.eval(); }
 	template <typename _Ty, index_t... _SwzArgs>
-	typename xmvector<_Ty, sizeof...(_SwzArgs)> load(const xmselector<_Ty, _SwzArgs...>& swzizzler)
+	typename xmvector<_Ty, sizeof...(_SwzArgs)> load(const xmswizzler<_Ty, _SwzArgs...>& swzizzler)
 	{ return swzizzler.eval(); }
 	template <typename _Ty, index_t... _SwzArgs>
-	typename void store(xmselector<_Ty, _SwzArgs...>&& swzizzler, const xmvector<_Ty, sizeof...(_SwzArgs)> v)
+	typename void store(xmswizzler<_Ty, _SwzArgs...>&& swzizzler, const xmvector<_Ty, sizeof...(_SwzArgs)> v)
 	{
 		swzizzler.assign(v);
 	}

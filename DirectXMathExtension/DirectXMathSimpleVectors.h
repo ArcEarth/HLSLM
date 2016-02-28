@@ -1,5 +1,7 @@
+#pragma once
 // Disable Viewport class to prevent <SimpleMath.h> to drag d3d11 headers in
 #define _SIMPLE_MATH_NO_VIEWPORT 1
+#include "DirectXMathExtend.h"
 #include <SimpleMath.h>
 
 namespace DirectX
@@ -239,4 +241,44 @@ namespace DirectX
 	{
 		XMStoreFloat4A(reinterpret_cast<XMFLOAT4A*>(&dest), v);
 	}
+
+#ifdef _OSTREAM_
+#include <iomanip>
+	//inline std::ostream& operator << (std::ostream& lhs, const SimpleMath::Vector3& rhs)
+	//{
+	//	lhs << '(' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.x
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.y << ')';
+	//	return lhs;
+	//};
+
+	//inline std::ostream& operator << (std::ostream& lhs, const SimpleMath::Vector4& rhs)
+	//{
+	//	lhs << '(' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.x
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.y
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.z << ')';
+	//	return lhs;
+	//};
+
+	//inline std::ostream& operator << (std::ostream& lhs, const SimpleMath::Vector2& rhs)
+	//{
+	//	lhs << '(' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.x
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.y
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.z
+	//		<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.w << ')';
+	//	return lhs;
+	//};
+
+	inline std::ostream& operator << (std::ostream& lhs, const SimpleMath::Quaternion& rhs)
+	{
+		lhs << (const Vector4&)(rhs);
+
+		float theta = std::acosf(rhs.w) * 2 / DirectX::XM_PI;
+		DirectX::Vector3 axis(rhs);
+		axis.Normalize();
+		lhs << "[axis=(" << axis
+			<< "),ang=" << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << theta << "*Pi]";
+		return lhs;
+	};
+#endif
+
 }

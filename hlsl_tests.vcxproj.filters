@@ -104,7 +104,7 @@
     <ClInclude Include="hlslm\load.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmselector.hpp">
+    <ClInclude Include="hlslm\xmswizzler.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
   </ItemGroup>

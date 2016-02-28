@@ -1,4 +1,5 @@
 #pragma once
+#if defined(__SSE3__) || defined(__SSE4__) || defined(__AVX__) || defined(__AVX2__)
 #ifdef __SSE3__
 #include "DirectXMathSSE3.h"
 #endif
@@ -28,34 +29,34 @@
 
 #if defined(__AVX2__)
 // AVX2 Header inlcude a copy of AVX header's swizzle and permute functions
-#define XM_PERMUTE	AVX2::
-#define XM_FMA		AVX2::
-#define XM_GET_SET	SSE4::
-#define XM_DOT		SSE4::
-#define XM_ROUND	SSE4::
+#define XM_PERMUTE	XM_NAMES AVX2::
+#define XM_FMA		XM_NAMES AVX2::
+#define XM_GET_SET	XM_NAMES SSE4::
+#define XM_DOT		XM_NAMES SSE4::
+#define XM_ROUND	XM_NAMES SSE4::
 #elif defined(__AVX__)
-#define XM_PERMUTE AVX::
+#define XM_PERMUTE XM_NAMES AVX::
 #if define(__FMA4__)
-#define XM_FMA	   FMA4::
+#define XM_FMA	   XM_NAMES FMA4::
 #elif define(__FMA3__)
-#define XM_FMA	   FMA3::
+#define XM_FMA	   XM_NAMES FMA3::
 #define XM_FMA
 #endif
-#define XM_GET_SET	SSE4::
-#define XM_DOT		SSE4::
-#define XM_ROUND	SSE4::
+#define XM_GET_SET	XM_NAMES SSE4::
+#define XM_DOT		XM_NAMES SSE4::
+#define XM_ROUND	XM_NAMES SSE4::
 #elif defined(__SSE4__)
-#define XM_PERMUTE
-#define XM_FMA
-#define XM_GET_SET	SSE4::
-#define XM_DOT		SSE4::
-#define XM_ROUND	SSE4::
+#define XM_PERMUTE	XM_NAMES
+#define XM_FMA		XM_NAMES
+#define XM_GET_SET	XM_NAMES SSE4::
+#define XM_DOT		XM_NAMES SSE4::
+#define XM_ROUND	XM_NAMES SSE4::
 #else //defined(__SSE3__)
-#define XM_PERMUTE
-#define XM_FMA
-#define XM_GET_SET
-#define XM_DOT
-#define XM_ROUND
+#define XM_PERMUTE	XM_NAMES
+#define XM_FMA		XM_NAMES
+#define XM_GET_SET	XM_NAMES
+#define XM_DOT		XM_NAMES
+#define XM_ROUND	XM_NAMES
 #endif
 
 // Name space for the intrinsic override functions
@@ -76,6 +77,10 @@ namespace DirectX
 		using XM_PERMUTE XMVectorSplatY;
 		using XM_PERMUTE XMVectorSplatZ;
 		using XM_PERMUTE XMVectorSplatW;
+
+		
+		using XM_FMA	 XMVectorMultiplyAdd; // fmadd
+		using XM_FMA	 XMVectorNegativeMultiplySubtract; // fnmadd
 
 		using XM_FMA	 XMVector2Transform;
 		using XM_FMA	 XMVector2TransformNormal;
@@ -175,3 +180,6 @@ template<> inline XMVECTOR XM_CALLCONV XMVectorSwizzle<0,0,2,2>(FXMVECTOR V) { r
 template<> inline XMVECTOR XM_CALLCONV XMVectorSwizzle<1,1,3,3>(FXMVECTOR V) { return _mm_movehdup_ps(V); }	
 #endif
 }
+#else
+#define _DXMEXT
+#endif

@@ -8,8 +8,8 @@
 #define __SSE3__ 1
 
 #include <DirectXMath.h>
-#include "DirectXMathExtend.h"
-#include "DirectXMathIntrinsics.h"
+#include <DirectXMathExtend.h>
+#include <DirectXMathIntrinsics.h>
 #ifndef _DXMEXT
 #define _DXMEXT
 #endif
@@ -37,7 +37,7 @@ namespace DirectX
 		struct xmvector;
 
 		template <typename _T, index_t... _SwzArgs>
-		struct xmselector;
+		struct xmswizzler;
 
 		namespace detail
 		{
@@ -224,10 +224,10 @@ namespace DirectX
 			}
 
 			template <index_t... selectors>
-			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>& XM_CALLCONV swizzle();
+			inline enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>& XM_CALLCONV swizzle();
 
 			template <index_t... selectors>
-			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmselector<_T, selectors...>>& XM_CALLCONV swizzle() const;
+			inline const enable_if_t<valiad_swizzle_args<_Size, selectors...>::value, xmswizzler<_T, selectors...>>& XM_CALLCONV swizzle() const;
 
 			// Dynamic swizzlers
 			inline auto XM_CALLCONV swizzle(uint _x) const
@@ -330,16 +330,16 @@ namespace DirectX
 		{
 			template <uint32_t Elem>
 			// broadcast an element to all dimension, like xyzw -> xxxx
-			XMVECTOR split(FXMVECTOR xmv);
+			XMVECTOR splat(FXMVECTOR xmv);
 
 			template <>
-			XMVECTOR split<0>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatX(xmv); }
+			XMVECTOR splat<0>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatX(xmv); }
 			template <>
-			XMVECTOR split<1>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatY(xmv); }
+			XMVECTOR splat<1>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatY(xmv); }
 			template <>
-			XMVECTOR split<2>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatZ(xmv); }
+			XMVECTOR splat<2>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatZ(xmv); }
 			template <>
-			XMVECTOR split<3>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatW(xmv); }
+			XMVECTOR splat<3>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatW(xmv); }
 
 
 			template <> inline float XM_CALLCONV get<float, _x>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetX(xmv); }

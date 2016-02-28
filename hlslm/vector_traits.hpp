@@ -37,7 +37,7 @@ namespace DirectX
 
 		// wrapper for vector selection and swizzle
 		template <typename _T, index_t... _SwzArgs>
-		struct xmselector;
+		struct xmswizzler;
 
         template <typename T>
         struct vector_traits
@@ -61,7 +61,7 @@ namespace DirectX
 		struct scalar_traits : public std::false_type {};
 
 		template <typename _Ty>
-		struct is_xmexpression : public std::false_type {};
+		struct is_expression : public std::false_type {};
 
 		template <typename _Ty, size_t _Size>
 		struct enable_hlsl_operator< xmvector<_Ty, _Size >>
@@ -78,7 +78,7 @@ namespace DirectX
 		};
 
 		template <typename _Ty, index_t... _SwzIdx>
-		struct enable_hlsl_operator<xmselector<_Ty, _SwzIdx...>>
+		struct enable_hlsl_operator<xmswizzler<_Ty, _SwzIdx...>>
 		{
 			static constexpr bool exclusive = true;
 			static constexpr bool inclusive = true;
@@ -101,7 +101,7 @@ namespace DirectX
 		};
 
 		template <typename _Ty, index_t... _SwzIdx>
-		struct vector_traits<xmselector<_Ty, _SwzIdx...>>
+		struct vector_traits<xmswizzler<_Ty, _SwzIdx...>>
 		{
 			static constexpr size_t rows = 1;
 			static constexpr int cols = sizeof...(_SwzIdx);
@@ -115,25 +115,25 @@ namespace DirectX
 		struct is_xmvector<xmscalar<_Ty>> : std::true_type {};
 
 		template <typename _Ty, index_t... _SwzIdx>
-		struct is_xmexpression<xmselector<_Ty, _SwzIdx...>> : public std::true_type {};
+		struct is_expression<xmswizzler<_Ty, _SwzIdx...>> : public std::true_type {};
 
 		template <typename _Ty, size_t _SrcRows, size_t _SrcCols>
-		struct is_xmexpression<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
+		struct is_expression<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
 
 		template <typename _Ty, size_t _StRows, size_t _StCols, size_t _Rows, size_t _Cols>
-		struct is_xmexpression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
+		struct is_expression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
 
 		//template <typename _Ty>
-		//struct is_xmvector<xmselector<_Ty, 0>> : std::true_type {};
+		//struct is_xmvector<xmswizzler<_Ty, 0>> : std::true_type {};
 
 		//template <typename _Ty>
-		//struct is_xmvector<xmselector<_Ty, 0, 1>> : std::true_type {};
+		//struct is_xmvector<xmswizzler<_Ty, 0, 1>> : std::true_type {};
 
 		//template <typename _Ty>
-		//struct is_xmvector<xmselector<_Ty, 0, 1, 2>> : std::true_type {};
+		//struct is_xmvector<xmswizzler<_Ty, 0, 1, 2>> : std::true_type {};
 
 		//template <typename _Ty>
-		//struct is_xmvector<xmselector<_Ty, 0, 1, 2, 3>> : std::true_type {};
+		//struct is_xmvector<xmswizzler<_Ty, 0, 1, 2, 3>> : std::true_type {};
 
 		template <typename _Ty, size_t _Size>
 		struct is_xmvector<xmvector<_Ty, _Size>> : std::true_type {};
@@ -199,6 +199,7 @@ namespace DirectX
 
 			static constexpr size_t rows = get_dimension(lhs_traits::rows, rhs_traits::rows);
 			static constexpr size_t cols = get_dimension(lhs_traits::cols, rhs_traits::cols);
+			static constexpr size_t size = rows*cols;
 
 			using return_type = get_xm_type<scalar_type, rows, cols>;
 			using type = return_type;
@@ -230,7 +231,7 @@ namespace DirectX
 		struct is_mermery_type<xmvector<_Ty, _Size>> : std::false_type {};
 
 		template <typename _Ty, index_t... _SwzArgs>
-		struct is_mermery_type<xmselector<_Ty, _SwzArgs...>> : std::false_type {};
+		struct is_mermery_type<xmswizzler<_Ty, _SwzArgs...>> : std::false_type {};
 
 		template <typename _Ty>
 		struct memery_vector_traits : public vector_traits<_Ty>

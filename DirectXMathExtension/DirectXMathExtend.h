@@ -17,6 +17,9 @@
 #include <DirectXCollision.h>
 #include <DirectXColors.h>
 #include <DirectXMathIntrinsics.h>
+#ifndef _DXMEXT
+#define _DXMEXT
+#endif
 
 #ifndef XM_ALIGNATTR
 #define XM_ALIGNATTR _MM_ALIGN16
@@ -49,6 +52,10 @@ namespace DirectX
 		M.r[3] = XMVectorZero();
 		return M;
 	}
+
+	XMVECTOR    XM_CALLCONV     XMVectorAddInt(FXMVECTOR V1, FXMVECTOR V2);
+	XMVECTOR    XM_CALLCONV     XMVectorSubtractInt(FXMVECTOR V1, FXMVECTOR V2);
+	XMVECTOR    XM_CALLCONV     XMVectorMultiplyInt(FXMVECTOR V1, FXMVECTOR V2);
 
 	inline XMVECTOR XM_CALLCONV XMLoadFloat4(const float* pF4)
 	{
@@ -154,7 +161,7 @@ namespace DirectX
 		}
 	};
 
-	template <typename _T, size_t _Align_Boundary = std::alignment_of<_T>::value>
+	template <typename _T, size_t _Align_Boundary = alignof(_T)>
 	class AlignedAllocator
 	{
 	public:
@@ -515,33 +522,118 @@ namespace DirectX
 			r[1] /= S;
 			return *this;
 		}
-
-
-
-		//friend XMDUALVECTOR operator* (float S, CXMMATRIX M);
 	};
 
-#if defined(_XM_SSE_INTRINSICS_) 
-	template <>
-	inline XMVECTOR XM_CALLCONV XMVectorSwizzle<1, 1, 3, 3>(FXMVECTOR v)
+	inline XMVECTOR XM_CALLCONV XMQuaternionSlerpCoefficient(FXMVECTOR t, XMVECTOR xm1)
 	{
-		return SSE3::XMVectorSwizzle_1133(v);
+		const float opmu = 1.90110745351730037f;
+		const XMVECTORF32 neg_u0123 = { -1.f / (1 * 3), -1.f / (2 * 5), -1.f / (3 * 7), -1.f / (4 * 9) };
+		const XMVECTORF32 neg_u4567 = { -1.f / (5 * 11), -1.f / (6 * 13), -1.f / (7 * 15), -opmu / (8 * 17) };
+		const XMVECTORF32 neg_v0123 = { -1.f / 3, -2.f / 5, -3.f / 7, -4.f / 9 };
+		const XMVECTORF32 neg_v4567 = { -5.f / 11, -6.f / 13, -7.f / 15, -opmu * 8 / 17 };
+		const XMVECTOR one = XMVectorReplicate(1.f);
+
+		XMVECTOR sqrT = XMVectorMultiply(t, t);
+		XMVECTOR b0123, b4567, b, c;
+		// (b4, b5, b6, b7) = 
+		// (x - 1) * (u4 * t^2 - v4, u5 * t^2 - v5, u6 * t^2 - v6, u7 * t^2 - v7) 
+		b4567 = _DXMEXT XMVectorNegativeMultiplySubtract(neg_u4567, sqrT, neg_v4567);
+		//b4567 = _mm_mul_ps(u4567, sqrT);
+		//b4567 = _mm_sub_ps(b4567, v4567);
+		b4567 = XMVectorMultiply(b4567, xm1);
+		// (b7, b7, b7, b7) 
+		b = _DXMEXT XMVectorSwizzle<3, 3, 3, 3>(b4567);
+		c = XMVectorAdd(b, one);
+		// (b6, b6, b6, b6) 
+		b = _DXMEXT XMVectorSwizzle<2, 2, 2, 2>(b4567);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b5, b5, b5, b5) 
+		b = _DXMEXT XMVectorSwizzle<1, 1, 1, 1>(b4567);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b4, b4, b4, b4) 
+		b = _DXMEXT XMVectorSwizzle<0, 0, 0, 0>(b4567);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b0, b1, b2, b3) = 
+		//(x-1)*(u0*t^2-v0,u1*t^2-v1,u2*t^2-v2,u3*t^2-v3)
+		b0123 = _DXMEXT XMVectorNegativeMultiplySubtract(neg_u0123, sqrT, neg_v0123);
+		//b0123 = _mm_mul_ps(u0123, sqrT);
+		//b0123 = _mm_sub_ps(b0123, v0123);
+		b0123 = XMVectorMultiply(b0123, xm1);
+		// (b3, b3, b3, b3)
+		b = _DXMEXT XMVectorSwizzle<3, 3, 3, 3>(b0123);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b2, b2, b2, b2)
+		b = _DXMEXT XMVectorSwizzle<2, 2, 2, 2>(b0123);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b1, b1, b1, b1)
+		b = _DXMEXT XMVectorSwizzle<1, 1, 1, 1>(b0123);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+		// (b0, b0, b0, b0)
+		b = _DXMEXT XMVectorSwizzle<0, 0, 0, 0>(b0123);
+		c = _DXMEXT XMVectorMultiplyAdd(b, c, one);
+
+		c = XMVectorMultiply(t, c);
+		return c;
 	}
-	template <>
-	inline XMVECTOR XM_CALLCONV XMVectorSwizzle<0, 0, 2, 2>(FXMVECTOR v)
+	// reference
+	// Eberly : A Fast and Accurate Algorithm for Computing SLERP
+	inline XMVECTOR XM_CALLCONV XMQuaternionSlerpFastV(FXMVECTOR q0, FXMVECTOR q1, FXMVECTOR splatT)
 	{
-		return SSE3::XMVectorSwizzle_0022(v);
-	}
+#if defined(_XM_NO_INTRINSICS_)
+		// Precomputed constants.
+		const float opmu = 1.90110745351730037f;
+		const float u[8] = // 1 /[i (2i + 1 )] for i >= 1
+		{
+			1.f / (1 * 3), 1.f / (2 * 5), 1.f / (3 * 7), 1.f / (4 * 9),
+			1.f / (5 * 11), 1.f / (6 * 13), 1.f / (7 * 15), opmu / (8 * 17)
+		};
+		const float v[8] = // i /(2 i+ 1) for i >= 1
+		{
+			1.f / 3, 2.f / 5, 3.f / 7, 4.f / 9,
+			5.f / 11, 6.f / 13, 7.f / 15, opmu * 8 / 17
+		};
+
+		// x = dot(q0,q1) = cos(theta)
+		float x = q0.vector4_f32[0] * q1.vector4_f32[0] + q0.vector4_f32[1] * q1.vector4_f32[1] + q0.vector4_f32[2] * q1.vector4_f32[2] + q0.vector4_f32[3] * q1.vector4_f32[3]; // cos (theta)
+		float sign = (x >= 0 ? 1 : (x = -x, -1));
+		float xm1 = x - 1;
+		float d = 1 - t, sqrT = t * t, sqrD = d * d;
+		float bT[8], bD[8];
+		for (int i = 7; i >= 0; --i)
+		{
+			bT[i] = (u[i] * sqrT - v[i]) * xm1;
+			bD[i] = (u[i] * sqrD - v[i]) * xm1;
+		}
+		float cT = sign * t *(
+			1 + bT[0] * (1 + bT[1] * (1 + bT[2] * (1 + bT[3] * (
+				1 + bT[4] * (1 + bT[5] * (1 + bT[6] * (1 + bT[7]))))))));
+		float cD = d * (
+			1 + bD[0] * (1 + bD[1] * (1 + bD[2] * (1 + bD[3] * (
+				1 + bD[4] * (1 + bD[5] * (1 + bD[6] * (1 + bD[7]))))))));
+		XMVECTOR slerp = q0 * cD + q1 * cT;
+		return slerp;
+
+#elif defined(_XM_SSE_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
+		const XMVECTOR signMask = XMVectorReplicate(-0.f);
+		const XMVECTOR one = XMVectorReplicate(1.f); // Dot product of 4-tuples. 
+		XMVECTOR x = _DXMEXT XMVector4Dot(q0, q1); // cos (theta) in all components
+#if defined(_XM_SSE_INTRINSICS_)
+		XMVECTOR sign = _mm_and_ps(signMask, x);
+		x = _mm_xor_ps(sign, x);
+		XMVECTOR localQ1 = _mm_xor_ps(sign, q1);
+#else
+		uint32x4_t sign = vandq_u32(signMask, x);
+		x = veor_u32(sign, x);
+		XMVECTOR localQ1 = veor_u32(sign, q1);
 #endif
-	template <>
-	inline XMVECTOR XM_CALLCONV XMVectorSwizzle<0, 0, 1, 1>(FXMVECTOR v)
-	{
-		return XMVectorMergeXY(v, v);
-	}
-	template <>
-	inline XMVECTOR XM_CALLCONV XMVectorSwizzle<2, 2, 3, 3>(FXMVECTOR v)
-	{
-		return XMVectorMergeZW(v, v);
+		XMVECTOR xm1 = XMVectorSubtract(x, one);
+		XMVECTOR splatD = XMVectorSubtract(one, splatT);
+		XMVECTOR cT = XMQuaternionSlerpCoefficient(splatT, xm1);
+		XMVECTOR cD = XMQuaternionSlerpCoefficient(splatD, xm1);
+		cT = XMVectorMultiply(cT, localQ1);
+		cD = _DXMEXT XMVectorMultiplyAdd(cD, q0, cT);
+		return cD;
+#endif
 	}
 
 	// Caculate the rotation quaternion base on v1 and v2 (shortest rotation geo-distance in sphere surface)
@@ -596,28 +688,28 @@ namespace DirectX
 		//euler.m128_f32[3] = 0;
 		//return euler;
 
-		XMVECTOR q02 = XMVectorSwizzle<3, 3, 1, 1>(q); // q0022
-		XMVECTOR q13 = XMVectorSwizzle<0, 0, 2, 2>(q); // q1133
+		XMVECTOR q02 = _DXMEXT XMVectorSwizzle<3, 3, 1, 1>(q); // q0022
+		XMVECTOR q13 = _DXMEXT XMVectorSwizzle<0, 0, 2, 2>(q); // q1133
 
 													   // eular X - Roll
-		XMVECTOR Y = XMVector4Dot(q02, q13);	// 2 * (q2*q1+q0*q3)
-		XMVECTOR X = XMVectorSwizzle<0, 0, 1, 1>(q); // q2121
-		X = XMVector4Dot(X, X);					// 2 * (q2*q2+q1*q1)
+		XMVECTOR Y = _DXMEXT XMVector4Dot(q02, q13);	// 2 * (q2*q1+q0*q3)
+		XMVECTOR X = _DXMEXT XMVectorSwizzle<0, 0, 1, 1>(q); // q2121
+		X = _DXMEXT XMVector4Dot(X, X);					// 2 * (q2*q2+q1*q1)
 		X = XMVectorSubtract(g_XMOne.v, X);		// 1 - 2 * (q2*q2+q1*q1)
 		XMVECTOR vResult = XMVectorATan2(Y, X);
 
 		// eular Y - Y
-		q13 = XMVectorSwizzle<2, 2, 0, 0>(q); // now q3311
-		Y = XMVector4Dot(q02, q13);			  // now 3311 dot 0022 = q3*q0 + q1*q2
-		X = XMVectorSwizzle<1, 1, 2, 2>(q);		  // now q3232
-		X = XMVector4Dot(X, X);				  // now 2 * (q3*q3+q2*q2)
+		q13 = _DXMEXT XMVectorSwizzle<2, 2, 0, 0>(q); // now q3311
+		Y = _DXMEXT XMVector4Dot(q02, q13);			  // now 3311 dot 0022 = q3*q0 + q1*q2
+		X = _DXMEXT XMVectorSwizzle<1, 1, 2, 2>(q);		  // now q3232
+		X = _DXMEXT XMVector4Dot(X, X);				  // now 2 * (q3*q3+q2*q2)
 		X = XMVectorSubtract(g_XMOne.v, X);	  // now 1 - 2 * (q3*q3+q2*q2)
 		X = XMVectorATan2(Y, X);
 
 		// eular X - Patch
-		Y = XMVectorSwizzle<2, 3, 0, 1>(q); // now q3 q0 q1 q2 
+		Y = _DXMEXT XMVectorSwizzle<2, 3, 0, 1>(q); // now q3 q0 q1 q2 
 		Y = XMVectorMultiply(Y, g_XMNegtiveXZ.v); // now -q3 q0 -q1 q2
-		Y = XMVector4Dot(Y, q); // now -q1*q3 + q2*q0 - q3*q1 + q0*q2
+		Y = _DXMEXT XMVector4Dot(Y, q); // now -q1*q3 + q2*q0 - q3*q1 + q0*q2
 		Y = XMVectorASin(Y);
 
 		// merge result
@@ -685,7 +777,7 @@ namespace DirectX
 
 	inline XMDUALVECTOR XM_CALLCONV XMDualQuaternionNormalize(FXMDUALVECTOR Dq)
 	{
-		XMVECTOR Length = XMQuaternionLength(Dq.r[0]);
+		XMVECTOR Length = _DXMEXT XMVector4Length(Dq.r[0]);
 		XMDUALVECTOR dqRes;
 		dqRes.r[0] = XMVectorDivide(Dq.r[0], Length);
 		dqRes.r[1] = XMVectorDivide(Dq.r[1], Length);
@@ -693,19 +785,19 @@ namespace DirectX
 	}
 	inline XMVECTOR XM_CALLCONV XMDualQuaternionNormalizeEst(FXMDUALVECTOR Dq)
 	{
-		return XMVector4NormalizeEst(Dq.r[0]);
+		return _DXMEXT XMVector4NormalizeEst(Dq.r[0]);
 	}
 	inline XMVECTOR XM_CALLCONV XMDualQuaternionLength(FXMDUALVECTOR Dq)
 	{
-		return XMVector4Length(Dq.r[0]);
+		return _DXMEXT XMVector4Length(Dq.r[0]);
 	}
 	inline XMVECTOR XM_CALLCONV XMDualQuaternionLengthSq(FXMDUALVECTOR Dq)
 	{
-		return XMVector4LengthSq(Dq.r[0]);
+		return _DXMEXT XMVector4LengthSq(Dq.r[0]);
 	}
 	inline XMVECTOR XM_CALLCONV XMDualQuaternionLengthEst(FXMDUALVECTOR Dq)
 	{
-		return XMVector4LengthEst(Dq.r[0]);
+		return _DXMEXT XMVector4LengthEst(Dq.r[0]);
 	}
 	inline XMDUALVECTOR XM_CALLCONV XMDualVectorConjugate(FXMDUALVECTOR Dq)
 	{
@@ -748,22 +840,22 @@ namespace DirectX
 		XMVECTOR vT;
 		XMVECTOR Qr = Dq.r[0];
 		XMVECTOR Qe = Dq.r[1];
-		Qr = XMQuaternionNormalize(Qr);
+		Qr = _DXMEXT XMVector4Normalize(Qr);
 
-		XMVECTOR Q = XMVectorSwizzle<3, 2, 1, 0>(Qr);
+		XMVECTOR Q = _DXMEXT XMVectorSwizzle<3, 2, 1, 0>(Qr);
 		Q = XMVectorMultiply(Qe, Q);
-		Q = XMVector4Dot(Q, ControlX.v);
+		Q = _DXMEXT XMVector4Dot(Q, ControlX.v);
 		vT = XMVectorAndInt(Q, g_XMMaskX.v);
 
-		Q = XMVectorSwizzle<2, 3, 0, 1>(Qr);
+		Q = _DXMEXT XMVectorSwizzle<2, 3, 0, 1>(Qr);
 		Q = XMVectorMultiply(Qe, Q);
-		Q = XMVector4Dot(Q, ControlY.v);
+		Q = _DXMEXT XMVector4Dot(Q, ControlY.v);
 		Q = XMVectorAndInt(Q, g_XMMaskY.v);
 		vT = XMVectorOrInt(vT, Q);
 
-		Q = XMVectorSwizzle<1, 0, 3, 2>(Qr);
+		Q = _DXMEXT XMVectorSwizzle<1, 0, 3, 2>(Qr);
 		Q = XMVectorMultiply(Qe, Q);
-		Q = XMVector4Dot(Q, ControlZ.v);
+		Q = _DXMEXT XMVector4Dot(Q, ControlZ.v);
 		Q = XMVectorAndInt(Q, g_XMMaskZ.v);
 		vT = XMVectorOrInt(vT, Q);
 
@@ -1369,20 +1461,10 @@ namespace DirectX
 			<< ',' << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << rhs.w << ')';
 		return lhs;
 	};
-
-	inline std::ostream& operator << (std::ostream& lhs, const DirectX::Quaternion& rhs)
-	{
-		lhs << (const Vector4&)(rhs);
-
-		float theta = std::acosf(rhs.w) * 2 / DirectX::XM_PI;
-		DirectX::Vector3 axis(rhs);
-		axis.Normalize();
-		lhs << "[axis=(" << axis
-			<< "),ang=" << std::setw(6) << setiosflags(std::ios::fixed) << std::setprecision(3) << theta << "*Pi]";
-		return lhs;
-	};
 }
 
 #endif
 
+#include "DirectXMathSimpleVectors.h"
+#include "DirectXMathTransforms.h"
 #endif

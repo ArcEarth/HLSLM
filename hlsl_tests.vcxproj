@@ -42,11 +42,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;C:\Users\Yupeng\Documents\GitHub\HLSLM\DirectXMathExtension;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;$(IncludePath)</IncludePath>
+    <IncludePath>$(SDKS)\boost_1_52_0;D:\User\Yupeng\Documents\GitHub\OpenAvataring\DirectX\Inc;C:\Users\Yupeng\Documents\GitHub\HLSLM\DirectXMathExtension;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -125,7 +125,7 @@
     <ClInclude Include="hlslm\vector_traits.hpp" />
     <ClInclude Include="hlslm\xmconstants.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
-    <ClInclude Include="hlslm\xmselector.hpp" />
+    <ClInclude Include="hlslm\xmswizzler.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
     <ClInclude Include="hlslm\xmoperators.hpp" />
     <ClInclude Include="hlsl\array_traits.hpp" />
