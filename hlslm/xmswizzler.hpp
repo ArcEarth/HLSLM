@@ -207,29 +207,23 @@ namespace DirectX
 			// Scalar Selection 
 			template <typename U = Scalar>
 			inline XM_CALLCONV operator enable_if_t<Size == 1 && std::is_same<U, Scalar>::value, U>() const
-			{
-				return detail::get<Scalar, _SwzArgs...>(this->v);
-			}
+			{ return detail::get<Scalar, _SwzArgs...>(this->v); }
 
 			template <typename U = Scalar>
 			inline XM_CALLCONV operator enable_if_t<Size == 1 && std::is_same<U, Scalar>::value, xmscalar<U>>() const
-			{
-				return xmscalar<U>(detail::splat<_SwzArgs...>(this->v));
-			}
+			{ return xmscalar<U>(detail::splat<_SwzArgs...>(this->v)); }
 
 			template <index_t... _NewSwzArgs>
-			inline const std::enable_if_t<
-				valiad_swizzle_args<Size, _NewSwzArgs...>::value,
-				detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>> &&
+			inline const detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&
 				XM_CALLCONV swizzle() const {
+				static_assert(valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
 				return reinterpret_cast<const detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&>(*this);
 			}
 
 			template <index_t... _NewSwzArgs>
-			inline std::enable_if_t<
-					valiad_swizzle_args<Size, _NewSwzArgs...>::value,
-					detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>>&
+			inline detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&
 				XM_CALLCONV swizzle() {
+				static_assert(valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
 				return reinterpret_cast<detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&>(*this);
 			}
 
@@ -256,7 +250,6 @@ namespace DirectX
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
 				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_SwzArgs...>, index_sequence<(_SrcSwz + 4)...>>::type;
-
 				this->v = detail::permute_impl<permute_sequence>::invoke(this->v, src.v);
 			}
 
@@ -282,7 +275,7 @@ namespace DirectX
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
 				using SrcSwizzlerType = detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<SrcSize>>;
 				auto& srcv = reinterpret_cast<const SrcSwizzlerType&>(src);
-				this->assign(std::move(srcv));
+				this->assign(srcv);
 			}
 
 			template <typename _Ty>
@@ -310,36 +303,79 @@ namespace DirectX
 			template <index_t SrcSize>
 			inline enable_if_t<sizeof...(_SwzArgs) == SrcSize>
 				XM_CALLCONV	operator=(const xmvector<Scalar, SrcSize> src)
-			{
-				this->assign(std::move(src));
-			}
+			{ this->assign(std::move(src)); }
 
 			template <typename U = Scalar>
 			inline enable_if_t<Size == 1 && std::is_same<U, Scalar>::value> 
 				XM_CALLCONV operator= (U scalar)
-			{
-				this->v = detail::set<Scalar, _SwzArgs...>(this->v, scalar);
-			}
+			{ this->v = detail::set<Scalar, _SwzArgs...>(this->v, scalar); }
 
 			inline void	XM_CALLCONV operator= (const xmscalar<Scalar> scalar)
-			{
-				this->assign(reinterpret_cast<const this_type&>(scalar));
-			}
+			{ this->assign(reinterpret_cast<const this_type&>(scalar)); }
 
 			//template <typename U>
 			//inline enable_if_t<(Size < 4) && std::is_same<U, Scalar>::value>
 			void XM_CALLCONV operator=(const this_type& src)
-			{
-				this->assign(std::move(src));
-			}
+			{ this->assign(src); }
 
 			// any to any assignment
 			// v4.yz = v3.zy;
 			template <index_t... _SrcSwz>
 			inline enable_if_t<(sizeof...(_SwzArgs) == sizeof...(_SrcSwz)) && !std::is_same<index_sequence<_SrcSwz...>,index_sequence<_SwzArgs...>>::value>
 				XM_CALLCONV operator=(const xmswizzler<Scalar, _SrcSwz...>& src)
+			{ this->assign(src); }
+
+			template <template<typename, size_t> typename _TOperator, index_t... _SrcSwz>
+			inline void invoke_operator_assign(const xmswizzler<Scalar, _SrcSwz...>& src)
 			{
-				this->assign(std::move(src));
+				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
+				static_assert(sizeof...(_SrcSwz) == Size, "swizzler dimension must agree");
+				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_SwzArgs...>, index_sequence<(_SrcSwz + 4)...>>::type;
+				using opr = _TOperator<scalar_type, 4>;
+				XMVECTOR i = opr::identity();
+				XMVECTOR temp = detail::permute_impl<permute_sequence>::invoke(i, src.v);
+				this->v = opr::invoke(this->v, temp);
+			}
+
+			// Case of swizzler + vector(scalar)
+			inline xmvector_type XM_CALLCONV operator + (const xmvector_type rhs) const
+			{ return rhs.operator+(*this); }
+			inline xmvector_type XM_CALLCONV operator - (const xmvector_type rhs) const
+			{ return rhs.operator-(*this); }
+			inline xmvector_type XM_CALLCONV operator * (const xmvector_type rhs) const
+			{ return rhs.operator*(*this); }
+			inline xmvector_type XM_CALLCONV operator / (const xmvector_type rhs) const
+			{ return rhs.operator/(*this); }
+
+			template <index_t... _SrcSwz> inline void XM_CALLCONV operator+=(const xmswizzler<Scalar, _SrcSwz...>& src)
+			{ invoke_operator_assign<vector_math::add, _SrcSwz...>(src); }
+			template <index_t... _SrcSwz> inline void XM_CALLCONV operator-=(const xmswizzler<Scalar, _SrcSwz...>& src)
+			{ invoke_operator_assign<vector_math::subtract, _SrcSwz...>(src); }
+			template <index_t... _SrcSwz> inline void XM_CALLCONV operator*=(const xmswizzler<Scalar, _SrcSwz...>& src)
+			{ invoke_operator_assign<vector_math::multiply, _SrcSwz...>(src); }
+			template <index_t... _SrcSwz> inline void XM_CALLCONV operator/=(const xmswizzler<Scalar, _SrcSwz...>& src)
+			{ invoke_operator_assign<vector_math::divide, _SrcSwz...>(src); }
+
+			// identity to any assignment
+			inline void XM_CALLCONV operator+=(const xmvector_type rhs)
+			{
+				auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+				this->operator+=(srcv);
+			}
+			inline void XM_CALLCONV operator-=(const xmvector_type rhs)
+			{
+				auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+				this->operator-=(srcv);
+			}
+			inline void XM_CALLCONV operator*=(const xmvector_type rhs)
+			{
+				auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+				this->operator*=(srcv);
+			}
+			inline void XM_CALLCONV operator/=(const xmvector_type rhs)
+			{
+				auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+				this->operator/=(srcv);
 			}
 		};
 
@@ -419,15 +455,17 @@ namespace DirectX
 
 		template<typename _T, size_t _Size>
 		template<index_t ..._SwzArgs>
-		inline enable_if_t<valiad_swizzle_args<_Size, _SwzArgs...>::value, xmswizzler<_T, _SwzArgs...>>& XM_CALLCONV xmvector<_T, _Size>::swizzle()
+		inline xmswizzler<_T, _SwzArgs...>& XM_CALLCONV xmvector<_T, _Size>::swizzle()
 		{
+			static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
 			return reinterpret_cast<xmswizzler<_T, _SwzArgs...>&>(*this);
 		}
 
 		template<typename _T, size_t _Size>
 		template<index_t ..._SwzArgs>
-		inline const enable_if_t<valiad_swizzle_args<_Size, _SwzArgs...>::value, xmswizzler<_T, _SwzArgs...>>& XM_CALLCONV xmvector<_T, _Size>::swizzle() const
+		inline const xmswizzler<_T, _SwzArgs...>& XM_CALLCONV xmvector<_T, _Size>::swizzle() const
 		{
+			static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
 			return reinterpret_cast<const xmswizzler<_T, _SwzArgs...>&>(*this);
 		}
 	}

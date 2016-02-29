@@ -102,10 +102,9 @@ namespace DirectX
 		return Result;
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-		static_assert(false, "ARM Instrinsics not available yet");
-		float32x4_t vTemp = vmulq_f32(V1, V2);
-		float32x2_t v1 = vget_low_f32(vTemp);
-		float32x2_t v2 = vget_high_f32(vTemp);
+		//static_assert(false, "ARM Instrinsics not available yet");
+		float32x2_t v1 = vget_low_f32(V);
+		float32x2_t v2 = vget_high_f32(V);
 		v1 = vpadd_f32(v1, v1);
 		v2 = vpadd_f32(v2, v2);
 		v1 = vadd_f32(v1, v2);
@@ -416,14 +415,14 @@ namespace DirectX
 
 	// First XMDUALVECTOR
 #if ( defined(_M_IX86) || defined(_M_ARM) || defined(_XM_VMX128_INTRINSICS_) || _XM_VECTORCALL_ ) && !defined(_XM_NO_INTRINSICS_)
-	typedef const XMDUALVECTOR FXMDUALVECTOR;
+	typedef const XMDUALVECTOR& FXMDUALVECTOR;
 #else
 	typedef const XMDUALVECTOR& FXMDUALVECTOR;
 #endif
 
 	// 2nd
 #if ( defined(_M_ARM) || defined(_XM_VMX128_INTRINSICS_) || (_XM_VECTORCALL_)) && !defined(_XM_NO_INTRINSICS_)
-	typedef const XMDUALVECTOR GXMDUALVECTOR;
+	typedef const XMDUALVECTOR& GXMDUALVECTOR;
 #else
 	typedef const XMDUALVECTOR& GXMDUALVECTOR;
 #endif
@@ -475,7 +474,7 @@ namespace DirectX
 			r[1] = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray + 4));
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator= (FXMDUALVECTOR DV) { r[0] = DV.r[0]; r[1] = DV.r[1]; return *this; }
+		XMDUALVECTOR& XM_CALLCONV operator= (CXMDUALVECTOR DV) { r[0] = DV.r[0]; r[1] = DV.r[1]; return *this; }
 
 		XMDUALVECTOR XM_CALLCONV operator+ () const { return *this; }
 		XMDUALVECTOR XM_CALLCONV operator- () const
@@ -495,14 +494,14 @@ namespace DirectX
 			return r[row];
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator+= (FXMDUALVECTOR M)
+		XMDUALVECTOR& XM_CALLCONV operator+= (GXMDUALVECTOR M)
 		{
 			r[0] += M.r[0];
 			r[1] += M.r[1];
 			return *this;
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator-= (FXMDUALVECTOR M)
+		XMDUALVECTOR& XM_CALLCONV operator-= (GXMDUALVECTOR M)
 		{
 			r[0] -= M.r[0];
 			r[1] -= M.r[1];
@@ -623,8 +622,8 @@ namespace DirectX
 		XMVECTOR localQ1 = _mm_xor_ps(sign, q1);
 #else
 		uint32x4_t sign = vandq_u32(signMask, x);
-		x = veor_u32(sign, x);
-		XMVECTOR localQ1 = veor_u32(sign, q1);
+		x = veorq_u32(sign, x);
+		XMVECTOR localQ1 = veorq_u32(sign, q1);
 #endif
 		XMVECTOR xm1 = XMVectorSubtract(x, one);
 		XMVECTOR splatD = XMVectorSubtract(one, splatT);
@@ -1465,6 +1464,8 @@ namespace DirectX
 
 #endif
 
+#ifndef _NO_SIMPLE_VECTORS
 #include "DirectXMathSimpleVectors.h"
 #include "DirectXMathTransforms.h"
+#endif
 #endif

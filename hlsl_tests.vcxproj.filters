@@ -107,6 +107,9 @@
     <ClInclude Include="hlslm\xmswizzler.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
+    <ClInclude Include="hlslm\detail\vector_math.h">
+      <Filter>hlslm\details</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Release\algorithms_generation_checks.asm">

@@ -239,6 +239,7 @@ namespace DirectX
 			using void_type = void;
 			using memery_type = _Ty;
 			using traits = vector_traits<_Ty>;
+			static constexpr size_t size = traits::cols * traits::rows;
 
 			using type = std::conditional_t< traits::rows == 1,
 				xmvector<typename traits::scalar, traits::cols>,

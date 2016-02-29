@@ -15,6 +15,9 @@ using namespace DirectX::hlsl;
 //	return result;
 //}
 
+struct tag
+{};
+
 struct PropertyTest
 {
 	int m_k;
@@ -22,7 +25,11 @@ struct PropertyTest
 	const int& get_k() const { return m_k; }
 	int& get_k() { return m_k; }
 
-	__declspec(property(get = get_k)) int& k;
+	void put_k(int value) { m_k = value; }
+	void put_k(int* value) { m_k = reinterpret_cast<int>(value); }
+
+	__declspec(property(get = get_k, put = put_k)) int k;
+	//__declspec(property(get = get_k, put = put_k)) const int& k;
 };
 
 xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
@@ -46,9 +53,51 @@ struct test<integer_sequence<int,a...>, integer_sequence<int, b...>>
 
 using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 2, 3>>::type;
 
-inline xmvector3f cross(xmvector3f a, xmvector3f b)
+inline xmvector3f XM_CALLCONV cross(xmvector3f a, xmvector3f b)
 {
 	return xmvector3f(DirectX::XMVector3Cross(a.v, b.v));
+}
+
+void OperatorTest()
+{
+	xmvector2f v2;
+	xmvector3f v3;
+	xmvector4f v4;
+	xmscalar<float> v0;
+	float		scl;
+
+	v2 = v2 + v2;
+	v2 = v2 + v0;
+	v2 = v2 + v4.xy();
+	//v2 = v2 + scl; // error
+
+	v2 = v0 + scl;
+	v2 = v0 + v2;
+
+	v2 += v2;
+	v2 += v4.xy();
+	v2 += v0;
+	//v2 += v3;// error
+
+	//v2 = scl + v2; // error
+
+	v2 = v4.xy() + v2;
+	//v2 = v4.xy() + v3;// error
+	v2 = v4.xy() + v0;
+	//v2 = v4.xy() + scl;// error
+	v2 = v4.xy() + v3.yz();
+	v2 = (v4.xyz() + v3).yz();
+
+	//v4.xy() += v3; // error
+	v4.xy() += v3.xy();
+	v4.xy() += v3.yz();
+	v4.xy() += v2;
+	v4.xy() += v0;
+	//v4.xy() += scl; // error
+
+	v0 += v0;
+	v0 += scl;
+	//v0 += v2; //error
 }
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
@@ -58,19 +107,22 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 
 	float f3arry[3];
 
-	xmvector3f v3 = f3arry;
+	xmvector3f v3(f3arry);
 	v3 = f3arry;
 	DirectX::XMFLOAT3 f3;
 
 	v3.store(f3arry);
 	v3.zyx() = f3;
+
+	using traits = memery_vector_traits<DirectX::XMFLOAT3>;
+	
 	v3 = v3 + f3;
 
 	//v3 = f3 + f3arry;
 
 	//using test_t = decltype(v.xy().yx().xy().yx());
 
-	xmvector3f kf = cross(f3, DirectX::g_XMIdentityR0.v);
+	xmvector3f kf = cross(f3, DirectX::g_XMIdentityR0);
 
 	v2 = v2 + v2;
 	v2 = v2.swizzle<0,1>().swizzle<1,0>();
@@ -79,15 +131,17 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	v2 = v2 + v.xy();
 	v.xy() = v2 + v.zw();
 	v2.yx() = v2.yx();
-	
+
+	v.xy() = v2.yx() + v.zw();
+
 	auto z = zero();
 
 	v2 = v2 + z;
 	v2 = v2 + z;
 
-	auto veq = v2 == v2;
-	auto vgt = v2 > v2;
-	nor(veq, vgt);
+	//auto veq = v2 == v2;
+	//auto vgt = v2 > v2;
+	//nor(veq, vgt);
 
 	xmvector4f result;
 
@@ -112,7 +166,7 @@ int __cdecl main( int argc, char *argv[] )
 
 	ret0 = SetX_HL(xmv, 5.0f);
 
-	DirectX::XMStoreFloat4A(&f4, ret0.v);
+	ret0.store(f4);
 
 	std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
 
@@ -128,7 +182,7 @@ int __cdecl main( int argc, char *argv[] )
 
 	const auto& cp = p;
 
-	auto& cs = p.k;
+	auto& cs = cp.k;
 	//xmvector2f sar = swizzle_assign(make_swizzler<2, 1>(result), make_swizzler<2, 1>(xmv));
 
 	//xmvector4i xmvi(1);

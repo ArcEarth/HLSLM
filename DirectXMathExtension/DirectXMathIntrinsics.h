@@ -1,5 +1,5 @@
 #pragma once
-#if defined(__SSE3__) || defined(__SSE4__) || defined(__AVX__) || defined(__AVX2__)
+#if !defined(_M_ARM) && (defined(__SSE3__) || defined(__SSE4__) || defined(__AVX__) || defined(__AVX2__))
 #ifdef __SSE3__
 #include "DirectXMathSSE3.h"
 #endif

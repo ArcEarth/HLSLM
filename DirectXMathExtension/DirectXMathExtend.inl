@@ -49,7 +49,7 @@ namespace DirectX
 		Result.vector4_u32[3] = V1.vector4_u32[3] * V2.vector4_u32[3];
 		return Result;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-		return vmul_u32(V1, V2);
+		return vmulq_u32(V1, V2);
 #elif defined(_XM_SSE_INTRINSICS_) // Credit: Eigen 3.3.1
 #ifdef __SSE4__
 		return _mm_castsi128_ps(_mm_mullo_epi32(_mm_castps_si128(V1), _mm_castps_si128(V2)));

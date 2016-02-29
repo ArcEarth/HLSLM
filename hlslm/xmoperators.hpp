@@ -9,112 +9,13 @@ namespace DirectX
 {
 	namespace hlsl
 	{
-		namespace vector_math
-		{
-			template <typename _TScalar, size_t _Size>
-			struct add;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
-			template <typename _TScalar, size_t _Size>
-			struct subtract;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
-			template <typename _TScalar, size_t _Size>
-			struct multiply;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
-			template <typename _TScalar, size_t _Size>
-			struct divide;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
-			template <typename _TScalar, size_t _Size>
-			struct madd;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
-
-
-			template <size_t _Size>
-			struct add<float, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{ return XMVectorAdd(lhs, rhs); }
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct add<uint, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorAddInt(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct subtract<float, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorSubtract(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct subtract<uint, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorSubtractInt(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct multiply<float, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorMultiply(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-
-			};
-
-			template <size_t _Size>
-			struct multiply<uint, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorMultiplyInt(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct divide<float,_Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
-				{
-					return XMVectorDivide(lhs, rhs);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
-			};
-
-			template <size_t _Size>
-			struct madd<float, _Size>
-			{
-				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR v1, FXMVECTOR v2, FXMVECTOR v3)
-				{
-					return _DXMEXT XMVectorMultiplyAdd(v1,v2,v3);
-				}
-				inline auto XM_CALLCONV operator()(FXMVECTOR v1, FXMVECTOR v2, FXMVECTOR v3) { return invoke(v1, v2, v3); };
-			};
-		}
-
-		template <size_t _Size>
-		inline xmvector<float, _Size> XM_CALLCONV operator-(const xmvector<float, _Size> xmv)
-		{
-			xmvector<float, _Size> ret;
-			ret.v = XMVectorNegate(xmv.v);
-			return ret;
-		}
+		//template <size_t _Size>
+		//inline xmvector<float, _Size> XM_CALLCONV operator-(const xmvector<float, _Size> xmv)
+		//{
+		//	xmvector<float, _Size> ret;
+		//	ret.v = XMVectorNegate(xmv.v);
+		//	return ret;
+		//}
 
 		template <typename lhs_t, typename rhs_t>
 		struct float_vector_binary_operator_type : public std::enable_if<
@@ -149,16 +50,16 @@ namespace DirectX
 		{ return mvector.eval().v; }
 
 
-		template <typename lhs_t, typename rhs_t>
-		inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator<<(const lhs_t& lhs, const rhs_t& rhs)
-		{
-			using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
-			ret_type ret;
-			ret.v = XMVectorAdd(xmfoward(lhs), xmfoward(rhs));
-			return ret;
-		}
+		//template <typename lhs_t, typename rhs_t>
+		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator<<(const lhs_t& lhs, const rhs_t& rhs)
+		//{
+		//	using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
+		//	ret_type ret;
+		//	ret.v = XMVectorAdd(xmfoward(lhs), xmfoward(rhs));
+		//	return ret;
+		//}
 
-		template <typename lhs_t, typename rhs_t>
+	/*	template <typename lhs_t, typename rhs_t>
 		inline enable_if_binary_operator_t<lhs_t,rhs_t> XM_CALLCONV operator+(const lhs_t& lhs, const rhs_t& rhs)
 		{
 			using traits = binary_operator_traits<lhs_t, rhs_t>;
@@ -192,42 +93,7 @@ namespace DirectX
 			typename traits::return_type ret;
 			ret.v = vector_math::divide<typename traits::scalar_type, traits::size>::invoke(xmfoward(lhs), xmfoward(rhs));
 			return ret;
-		}
-
-		//template <typename lhs_t, typename rhs_t>
-		//std::enable_if_t<!is_mermery_type<lhs_t>::value && binary_operator_traits<lhs_t,rhs_t>::overload_assign>
-		//	operator += (lhs_t& lhs, const rhs_t& rhs)
-		//{
-		//	lhs = lhs + rhs;
-		//}
-
-
-		//template <typename lhs_t, typename rhs_t>
-		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator-(const lhs_t lhs, const rhs_t rhs)
-		//{
-		//	using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
-		//	ret_type ret;
-		//	ret.v = XMVectorSubtract(lhs.v, rhs.v);
-		//	return ret;
-		//}
-
-		//template <typename lhs_t, typename rhs_t>
-		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator*(const lhs_t lhs, const rhs_t rhs)
-		//{
-		//	using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
-		//	ret_type ret;
-		//	ret.v = XMVectorMultiply(lhs.v, rhs.v);
-		//	return ret;
-		//}
-
-		//template <typename lhs_t, typename rhs_t>
-		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator/(const lhs_t lhs, const rhs_t rhs)
-		//{
-		//	using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
-		//	ret_type ret;
-		//	ret.v = XMVectorDivide(lhs.v, rhs.v);
-		//	return ret;
-		//}
+		}*/
 
 		// Comparision functions
 		template <size_t _Size>
