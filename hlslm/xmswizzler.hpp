@@ -160,12 +160,12 @@ namespace DirectX
 			//using test = xmswizzler_concat_t<xmswizzler<float, 1, 2, 3>, 3, 2, 1>;
 		}
 
-		// This type is a wrapper for containning the swizzle and mask information of a xmvector
+		// This type is a wrapper for containing the swizzle and mask information of a xmvector
 		// Your should never construct this type like xmswizzler<float,_y,_z> xmv;
 		// instead, use function swizzle on an existed xmvector to construct
 		// helps to optimize in the case case of masked/swizzled assignment: v.yzw = p, v.wyz = p.xzw;
 		template <typename _T, index_t... _SwzArgs>
-		struct XM_ALIGNATTR xmswizzler
+		struct XM_ALIGNATTR xmswizzler : public detail::swizzle_operator_base<xmswizzler<_T, _SwzArgs...>, sizeof...(_SwzArgs)>
 		{
 			using this_type = xmswizzler<_T, _SwzArgs...>;
 			using Scalar = _T;
@@ -227,9 +227,7 @@ namespace DirectX
 				return reinterpret_cast<detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&>(*this);
 			}
 
-#include "detail/special_swizzle.h"
-
-			// When src and dst swzzle are same, this becomes an XMVectorSelect Masked Assignment Problem
+			// When src and dst swizzle are same, this becomes an XMVectorSelect Masked Assignment Problem
 			// v4.zxy = v4.zxy
 			template <typename U = Scalar>
 			inline enable_if_t<(Size < 4) && std::is_same<U, Scalar>::value>
@@ -416,7 +414,7 @@ namespace DirectX
 				return swizzle_assign(dst, srcv);
 			}
 
-			// When src and dst swzzle are same, this becomes an XMVectorSelect Masked Assignment Problem
+			// When src and dst swizzle are same, this becomes an XMVectorSelect Masked Assignment Problem
 			// v4.zxy = v4.zxy
 			template <typename _Ty, index_t... _SwzzleArgs>
 			inline XMVECTOR

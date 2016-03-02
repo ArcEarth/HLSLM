@@ -71,9 +71,6 @@
     <ClInclude Include="hlslm\detail\mpl.hpp">
       <Filter>hlslm\details</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\detail\swizzle_macro.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\detail\swizzles_def_2.h">
       <Filter>hlslm\details</Filter>
     </ClInclude>

@@ -18,9 +18,15 @@ using namespace DirectX::hlsl;
 template struct DirectX::hlsl::xmvector<float, 2>;
 template struct DirectX::hlsl::xmvector<float, 3>;
 template struct DirectX::hlsl::xmvector<float, 4>;
-//template struct DirectX::hlsl::xmvector<uint, 2>;
-//template struct DirectX::hlsl::xmvector<uint, 3>;
+#pragma warning(disable:4996)
+template struct DirectX::hlsl::xmvector<uint, 2>;
+template struct DirectX::hlsl::xmvector<uint, 3>;
 template struct DirectX::hlsl::xmvector<uint, 4>;
+#pragma warning(disable,4996)
+
+static constexpr size_t szVector4 = sizeof(xmvector4f);
+static constexpr size_t szVector3 = sizeof(xmvector3f);
+static constexpr size_t szVector2 = sizeof(xmvector2f);
 
 struct tag
 {};
@@ -156,7 +162,6 @@ void OperatorTest()
 
 	v2 = v0 + load(scl);
 	v2 = v0 + v2;
-
 	v2 += v2;
 	v2 += v4.xy();
 	v2 += v0;

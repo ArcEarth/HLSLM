@@ -11,7 +11,7 @@ namespace DirectX
 {
 namespace hlsl
 {
-	// the corresponding xmvector type of a memery vector
+	// the corresponding xmvector type of a memory vector
 	template <typename _Ty>
 	using if_memery_vector_type = typename enable_memery_traits_t<_Ty>::type;
 
@@ -20,7 +20,9 @@ namespace hlsl
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
-		return load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+		typename traits::type ret;
+		ret.v = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+		return ret;
 	}
 
 	template <typename _Ty>
@@ -28,7 +30,9 @@ namespace hlsl
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, true, traits::cols, traits::rows>;
-		return load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+		typename traits::type ret;
+		ret.v = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+		return ret;
 	}
 
 	template <typename _Ty>

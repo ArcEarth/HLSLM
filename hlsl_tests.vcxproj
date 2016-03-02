@@ -288,7 +288,6 @@
     <ClInclude Include="hlslm\detail\swizzles_def_3.h" />
     <ClInclude Include="hlslm\detail\swizzles_def_4.h" />
     <ClInclude Include="hlslm\detail\special_swizzle.h" />
-    <ClInclude Include="hlslm\detail\swizzle_macro.h" />
     <ClInclude Include="hlslm\detail\vector_math.h" />
     <ClInclude Include="hlslm\hlsl.hpp" />
     <ClInclude Include="hlslm\load.hpp" />
