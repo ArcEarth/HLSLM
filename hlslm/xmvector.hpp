@@ -64,22 +64,22 @@ namespace DirectX
 			template <typename _Ty, bool aligned, size_t cols, size_t rows = 1>
 			struct storage_helper;
 
-			inline XMVECTOR replicate_scalar(uint s)
+			inline XMVECTOR XM_CALLCONV replicate_scalar(uint s)
 			{
 				return XMVectorReplicateInt(s);
 			}
 
-			inline XMVECTOR replicate_scalar(float s)
+			inline XMVECTOR XM_CALLCONV replicate_scalar(float s)
 			{
 				return XMVectorReplicate(s);
 			}
 
-			inline XMVECTOR set_vector(float x, float y = .0f, float z = .0f, float w = .0f)
+			inline XMVECTOR XM_CALLCONV set_vector(float x, float y = .0f, float z = .0f, float w = .0f)
 			{
 				return XMVectorSet(x, y, z, w);
 			}
 
-			inline XMVECTOR set_vector(uint x, uint y = 0, uint z = 0, uint w = 0)
+			inline XMVECTOR XM_CALLCONV set_vector(uint x, uint y = 0, uint z = 0, uint w = 0)
 			{
 				return XMVectorSetInt(x, y, z, w);
 			}
@@ -128,7 +128,7 @@ namespace DirectX
 			struct valiad_swizzle_args
 			{
 				static_assert(sizeof...(_SwzArgs) <= 4, "Swizzle element count out of 4");
-				static_assert(conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value, "Swizzle index out of source vector size");
+				static_assert(conjunction < std::integral_constant<bool, (_SwzArgs < _Size || _SwzArgs == size_t(-1))>...>::value, "Swizzle index out of source vector size");
 
 				static constexpr bool value = (sizeof...(_SwzArgs) <= 4) && (conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value);
 			};
@@ -237,7 +237,7 @@ namespace DirectX
 
 
 		template <typename _T, size_t _Size>
-		struct xmvector
+		struct alignas(16) xmvector
 		{
 			//using components_name_enums = detail::components_name_enums;
 
@@ -255,7 +255,7 @@ namespace DirectX
 
 			inline xmvector() = default;
 
-			inline explicit xmvector(FXMVECTOR xmv) { v = xmv; }
+			inline explicit xmvector(CXMVECTOR xmv) { v = xmv; }
 
 			inline explicit xmvector(Scalar s) {
 				v = detail::replicate_scalar(s);
@@ -264,6 +264,8 @@ namespace DirectX
 			inline xmvector(Scalar _x, Scalar _y, Scalar _z = Scalar(0), Scalar _w = Scalar(0)) {
 				v = detail::set_vector(_x, _y, _z, _w);
 			}
+
+			this_type& operator= (const this_type& rhs) { this->v = rhs.v; return *this; }
 
 			inline operator XMVECTOR () const
 			{
@@ -351,13 +353,18 @@ namespace DirectX
 			}
 
 			inline this_type XM_CALLCONV operator + (const this_type rhs) const
-			{ this_type ret; ret += rhs; return ret; }
+			{ this_type ret; ret.v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 			inline this_type XM_CALLCONV operator - (const this_type rhs) const
-			{ this_type ret; ret += rhs; return ret; }
+			{ this_type ret; ret.v = vector_math::subtract<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 			inline this_type XM_CALLCONV operator * (const this_type rhs) const
-			{ this_type ret; ret += rhs; return ret; }
+			{ this_type ret; ret.v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 			inline this_type XM_CALLCONV operator / (const this_type rhs) const
-			{ this_type ret; ret += rhs; return ret; }
+			{ 
+				static_assert(std::is_floating_point<scalar_type>::value, "integer divison are EXTREMELT SLOW, use CPU scalar intrinsics instead");
+				this_type ret; 
+				ret.v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v);
+				return ret;
+			}
 
 
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
@@ -384,7 +391,7 @@ namespace DirectX
 			{
 				using traits = memery_vector_traits<_Ty>;
 				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
-				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), *this);
+				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), this->v);
 			}
 
 			template <typename _Ty>
@@ -392,25 +399,15 @@ namespace DirectX
 			{
 				using traits = memery_vector_traits<_Ty>;
 				using load_imple = detail::storage_helper<typename traits::scalar, true, traits::cols, traits::rows>;
-				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), *this);
+				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), this->v);
 			}
 #endif
 
 #include "detail/special_swizzle.h"
 		};
 
-		//template <typename _T>
-		//// Specialization for Sizeless (Unkown) vector
-		//struct xmvector<_T, 0>
-		//{
-		//	static constexpr size_t Size = 0;
-		//	using Scalar = _T;
-		//	typedef xmvector SelfType;
-		//	XMVECTOR v;
-		//};
-
 		template <typename _T>
-		struct xmscalar : public xmvector<_T, 1>
+		struct alignas(16) xmscalar : public xmvector<_T, 1>
 		{
 			using base_type = xmvector<_T, 1>;
 			using this_type = xmscalar<_T>;
@@ -421,15 +418,16 @@ namespace DirectX
 
 			inline xmscalar() = default;
 
-			inline xmscalar(Scalar s) {
+			// x86 Debug mode crush by these type of implicit constructor
+			inline XM_VECTOR_LOAD_CTOR xmscalar(Scalar s) {
 				this->v = detail::replicate_scalar(s);
 			}
 
-			inline explicit xmscalar(FXMVECTOR xmv) {
+			inline explicit xmscalar(CXMVECTOR xmv) {
 				this->v = xmv;
 			}
 
-			inline xmscalar& XM_CALLCONV operator=(xmscalar rhs) {
+			inline xmscalar& operator=(const xmscalar& rhs) {
 				this->v = rhs.v;
 			}
 
@@ -576,85 +574,85 @@ namespace DirectX
 
 			template <bool aligned>
 			struct storage_helper <float, aligned, false, 1> {
-				static auto load(const float* pSource) { return xmscalar<float>(XMVectorReplicatePtr(pSource)); }
-				static void XM_CALLCONV store(float* pDst, const xmscalar<float> xmv) { XMStoreFloat(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmscalar<float>(XMVectorReplicatePtr(pSource)); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, false, 2> {
-				static auto load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 2> xmv) { XMStoreFloat2(reinterpret_cast<XMFLOAT2*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat2(reinterpret_cast<XMFLOAT2*>(pDst), xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, false, 3> {
-				static auto load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 3> xmv) { XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat3(reinterpret_cast<XMFLOAT3*>(pDst), xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, false, 4> {
-				static auto load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 4> xmv) { XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat4(reinterpret_cast<XMFLOAT4*>(pDst), xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, true, 2> {
-				static auto load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2A(reinterpret_cast<const XMFLOAT2A*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 2> xmv) { XMStoreFloat2A(reinterpret_cast<XMFLOAT2A*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 2>(XMLoadFloat2A(reinterpret_cast<const XMFLOAT2A*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat2A(reinterpret_cast<XMFLOAT2A*>(pDst), xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, true, 3> {
-				static auto load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3A(reinterpret_cast<const XMFLOAT3A*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 3> xmv) { XMStoreFloat3A(reinterpret_cast<XMFLOAT3A*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 3>(XMLoadFloat3A(reinterpret_cast<const XMFLOAT3A*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat3A(reinterpret_cast<XMFLOAT3A*>(pDst), xmv); }
 			};
 
 			template <>
 			struct storage_helper <float, true, 4> {
-				static auto load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4A(reinterpret_cast<const XMFLOAT4A*>(pSource))); }
-				static void XM_CALLCONV store(float* pDst, const xmvector<float, 4> xmv) { XMStoreFloat4A(reinterpret_cast<XMFLOAT4A*>(pDst), xmv.v); }
+				static auto XM_CALLCONV load(const float* pSource) { return xmvector<float, 4>(XMLoadFloat4A(reinterpret_cast<const XMFLOAT4A*>(pSource))); }
+				static void XM_CALLCONV store(float* pDst, FXMVECTOR xmv) { XMStoreFloat4A(reinterpret_cast<XMFLOAT4A*>(pDst), xmv); }
 			};
 
 			template <bool aligned>
 			struct storage_helper <uint, aligned, false, 1> {
-				static auto load(const uint* pSource) { return xmscalar<uint>(XMVectorReplicateIntPtr(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const xmscalar<uint> xmv) { XMStoreInt(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmscalar<uint>(XMVectorReplicateIntPtr(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <uint, false, 2> {
-				static auto load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const xmvector<uint, 2> xmv) { XMStoreInt2(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt2(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <uint, false, 3> {
-				static auto load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const xmvector<uint, 3> xmv) { XMStoreInt3(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt3(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <uint, false, 4> {
-				static auto load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const  xmvector<uint, 4> xmv) { XMStoreInt4(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt4(pDst, xmv); }
 			};
 			template <>
 			struct storage_helper <uint, true, 2> {
-				static auto load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2A(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const  xmvector<uint, 2> xmv) { XMStoreInt2A(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 2>(XMLoadInt2A(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt2A(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <uint, true, 3> {
-				static auto load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3A(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const xmvector<uint, 3> xmv) { XMStoreInt3A(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 3>(XMLoadInt3A(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt3A(pDst, xmv); }
 			};
 
 			template <>
 			struct storage_helper <uint, true, 4> {
-				static auto load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4A(pSource)); }
-				static void XM_CALLCONV store(uint* pDst, const  xmvector<uint, 4> xmv) { XMStoreInt4A(pDst, xmv.v); }
+				static auto XM_CALLCONV load(const uint* pSource) { return xmvector<uint, 4>(XMLoadInt4A(pSource)); }
+				static void XM_CALLCONV store(uint* pDst, FXMVECTOR xmv) { XMStoreInt4A(pDst, xmv); }
 			};
 
 		}

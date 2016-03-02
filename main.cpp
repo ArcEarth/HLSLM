@@ -71,7 +71,7 @@ void OperatorTest()
 	v2 = v2 + v4.xy();
 	//v2 = v2 + scl; // error
 
-	v2 = v0 + scl;
+	v2 = v0 + load(scl);
 	v2 = v0 + v2;
 
 	v2 += v2;
@@ -96,62 +96,43 @@ void OperatorTest()
 	//v4.xy() += scl; // error
 
 	v0 += v0;
-	v0 += scl;
+	v0 += load(scl);
 	//v0 += v2; //error
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, DirectX::FXMVECTOR v)
+{
+	os << '(' << (float)v.m128_f32[0] << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector2f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector3f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector4f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ',' << (float)v.w() << ')';
+	return os;
 }
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
-	xmvector2f v2;
-	xmscalar<float> vs;
-
-	float f3arry[3];
-
-	xmvector3f v3(f3arry);
-	v3 = f3arry;
-	DirectX::XMFLOAT3 f3;
-
-	v3.store(f3arry);
-	v3.zyx() = f3;
-
-	using traits = memery_vector_traits<DirectX::XMFLOAT3>;
-	
-	v3 = v3 + f3;
-
-	//v3 = f3 + f3arry;
-
-	//using test_t = decltype(v.xy().yx().xy().yx());
-
-	xmvector3f kf = cross(f3, DirectX::g_XMIdentityR0);
-
-	v2 = v2 + v2;
-	v2 = v2.swizzle<0,1>().swizzle<1,0>();
-	v2 = v.xy().yx();
-	v2 = v2 + vs;
-	v2 = v2 + v.xy();
-	v.xy() = v2 + v.zw();
-	v2.yx() = v2.yx();
-
-	v.xy() = v2.yx() + v.zw();
-
-	auto z = zero();
-
-	v2 = v2 + z;
-	v2 = v2 + z;
-
-	//auto veq = v2 == v2;
-	//auto vgt = v2 > v2;
-	//nor(veq, vgt);
-
-	xmvector4f result;
-
-	//cacate_t vp;
-	xmscalar<float> xv(x);
-	result.swizzle<3,2,1,0>() = v.swizzle<1,0>().swizzle<0, 0, 1, 1>();
-	result.yz() = v.xy();
-	//using mask_seq = typename detail::sequence_to_mask<index_sequence<0,1>>::type;
-	//result.v = detail::swizzle_assign(v.swizzle<0>(), xv.swizzle<0>());
-	return result;
+	//using namespace std;
+	//cout << "v = " << v << endl;
+	v.xy() += v.zw();
+	//cout << "v.xy() += v.zw(); v ==" << v << endl;
+	v.yz() = v.yz() + v.yx();
+	//cout << "v.xy() = v.wz() + v.zw(); v ==" << v << endl;
+	return v;
 
 	//using rstSwz = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<0, 1>, index_sequence<0, 0>>::type;
 	//using sorted = typename sort_sequence<index_sequence<3*4+1, 1*4+2, 2*4+0, 0*4+3>>::type;
@@ -162,7 +143,7 @@ int __cdecl main( int argc, char *argv[] )
 	DirectX::XMFLOAT4A f4, f3;
 	xmvector4f xmv;
 	xmvector4f ret0,ret1;
-	xmv.v = DirectX::XMVectorSet(1, 2, 3, 4);
+	xmv.v = { 100.f,200.f,300.f,400.f };
 
 	ret0 = SetX_HL(xmv, 5.0f);
 
@@ -191,8 +172,8 @@ int __cdecl main( int argc, char *argv[] )
 	//DirectX::XMFLOAT4A f4;
 	//DirectX::XMStoreFloat4A(&f4, result.v);
 
-	char ch;
-	std::cin >> ch;
+	//char ch;
+	//std::cin >> ch;
 
 	//unit_tests();	
 

@@ -36,7 +36,7 @@ namespace hlsl
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
-		load_imple::store(reinterpret_cast<typename traits::scalar*>(&memery_vector),v);
+		load_imple::store(reinterpret_cast<typename traits::scalar*>(&memery_vector),v.v);
 	}
 
 	template <typename _Ty>
@@ -44,7 +44,7 @@ namespace hlsl
 	{
 		using traits = memery_vector_traits<_Ty>;
 		using load_imple = detail::storage_helper<typename traits::scalar, true, traits::cols, traits::rows>;
-		load_imple::store(reinterpret_cast<typename traits::scalar*>(&memery_vector),v);
+		load_imple::store(reinterpret_cast<typename traits::scalar*>(&memery_vector),v.v);
 	}
 
 	template <typename _Scalar>

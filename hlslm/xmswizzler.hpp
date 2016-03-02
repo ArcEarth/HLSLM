@@ -47,8 +47,8 @@ namespace DirectX
 
 				inline static XMVECTOR XM_CALLCONV invoke(FXMVECTOR v0, FXMVECTOR v1)
 				{
-					XMVECTOR control = XMVectorSetInt(zero_or_all(Masks)...);
-					return XMVectorSelect(v0, v1, control);
+					//XMVECTOR control = XMVectorSetInt(zero_or_all(Masks)...);
+					return _DXMEXT XMVectorSelect<((bool)Masks)...>(v0, v1);
 				}
 			};
 
@@ -238,7 +238,7 @@ namespace DirectX
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
 				using mask_seq = typename detail::sequence_to_mask<index_sequence<_SwzArgs...>>::type;
-				this->v = detail::select_impl<mask_seq>::invoke(src.v, this->v);
+				this->v = detail::select_impl<mask_seq>::invoke(this->v, src.v);
 			}
 
 			// any to any assignment, expcept swz == src_swz
@@ -303,7 +303,7 @@ namespace DirectX
 			template <index_t SrcSize>
 			inline enable_if_t<sizeof...(_SwzArgs) == SrcSize>
 				XM_CALLCONV	operator=(const xmvector<Scalar, SrcSize> src)
-			{ this->assign(std::move(src)); }
+			{ this->assign(src); }
 
 			template <typename U = Scalar>
 			inline enable_if_t<Size == 1 && std::is_same<U, Scalar>::value> 
@@ -326,7 +326,7 @@ namespace DirectX
 			{ this->assign(src); }
 
 			template <template<typename, size_t> typename _TOperator, index_t... _SrcSwz>
-			inline void invoke_operator_assign(const xmswizzler<Scalar, _SrcSwz...>& src)
+			inline void XM_CALLCONV invoke_operator_assign(const xmswizzler<Scalar, _SrcSwz...>& src)
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
 				static_assert(sizeof...(_SrcSwz) == Size, "swizzler dimension must agree");
