@@ -15,35 +15,26 @@ using namespace DirectX::hlsl;
 //	return result;
 //}
 
-template struct DirectX::hlsl::xmvector<float, 2>;
-template struct DirectX::hlsl::xmvector<float, 3>;
-template struct DirectX::hlsl::xmvector<float, 4>;
-#pragma warning(disable:4996)
-template struct DirectX::hlsl::xmvector<uint, 2>;
-template struct DirectX::hlsl::xmvector<uint, 3>;
-template struct DirectX::hlsl::xmvector<uint, 4>;
-#pragma warning(disable,4996)
-
 static constexpr size_t szVector4 = sizeof(xmvector4f);
 static constexpr size_t szVector3 = sizeof(xmvector3f);
 static constexpr size_t szVector2 = sizeof(xmvector2f);
 
-struct tag
-{};
-
-struct PropertyTest
-{
-	int m_k;
-
-	const int& get_k() const { return m_k; }
-	int& get_k() { return m_k; }
-
-	void put_k(int value) { m_k = value; }
-	void put_k(int* value) { m_k = reinterpret_cast<intptr_t>(value); }
-
-	__declspec(property(get = get_k, put = put_k)) int k;
-	//__declspec(property(get = get_k, put = put_k)) const int& k;
-};
+//struct tag
+//{};
+//
+//struct PropertyTest
+//{
+//	int m_k;
+//
+//	const int& get_k() const { return m_k; }
+//	int& get_k() { return m_k; }
+//
+//	void put_k(int value) { m_k = value; }
+//	void put_k(int* value) { m_k = reinterpret_cast<intptr_t>(value); }
+//
+//	__declspec(property(get = get_k, put = put_k)) int k;
+//	//__declspec(property(get = get_k, put = put_k)) const int& k;
+//};
 
 xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
 {
@@ -144,7 +135,6 @@ void OperatorTest()
 	int r = b.k;
 	using namespace std;
 	cout << "r = b.k = " << r << endl;
-	b.k = 317.0f;
 
 	foo<sqr>::excute(3);
 	foo<negate>::excute(3);
@@ -154,6 +144,11 @@ void OperatorTest()
 	xmvector4f v4;
 	xmscalar<float> v0;
 	float		scl;
+	xmvector4i vi4(1);
+
+	uint iarray[4];
+	vi4 /= vi4;
+	xor<4>(vi4, vi4.wzyx());
 
 	v2 = v2 + v2;
 	v2 = v2 + v0;

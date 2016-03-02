@@ -216,14 +216,14 @@ namespace DirectX
 			template <index_t... _NewSwzArgs>
 			inline const detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&
 				XM_CALLCONV swizzle() const {
-				static_assert(valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
+				static_assert(detail::valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
 				return reinterpret_cast<const detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&>(*this);
 			}
 
 			template <index_t... _NewSwzArgs>
 			inline detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&
 				XM_CALLCONV swizzle() {
-				static_assert(valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
+				static_assert(detail::valiad_swizzle_args<Size, _SwzArgs...>::value, "Swizzle index out of range");
 				return reinterpret_cast<detail::xmswizzler_concat_t<this_type, _NewSwzArgs...>&>(*this);
 			}
 
@@ -455,7 +455,7 @@ namespace DirectX
 		template<index_t ..._SwzArgs>
 		inline xmswizzler<_T, _SwzArgs...>& XM_CALLCONV xmvector<_T, _Size>::swizzle()
 		{
-			static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
+			static_assert(detail::valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
 			return reinterpret_cast<xmswizzler<_T, _SwzArgs...>&>(*this);
 		}
 
@@ -463,7 +463,7 @@ namespace DirectX
 		template<index_t ..._SwzArgs>
 		inline const xmswizzler<_T, _SwzArgs...>& XM_CALLCONV xmvector<_T, _Size>::swizzle() const
 		{
-			static_assert(valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
+			static_assert(detail::valiad_swizzle_args<_Size, _SwzArgs...>::value, "Swizzle index out of range");
 			return reinterpret_cast<const xmswizzler<_T, _SwzArgs...>&>(*this);
 		}
 	}

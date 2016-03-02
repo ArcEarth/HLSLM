@@ -18,14 +18,6 @@ namespace DirectX
 		//}
 
 		template <typename lhs_t, typename rhs_t>
-		struct float_vector_binary_operator_type : public std::enable_if<
-			binary_operator_traits<lhs_t, rhs_t>::overload &&
-			std::is_same < float, typename binary_operator_traits<lhs_t, rhs_t>::scalar_type>::value,
-			typename binary_operator_traits<lhs_t, rhs_t>::return_type >
-		{
-		};
-
-		template <typename lhs_t, typename rhs_t>
 		struct enable_if_binary_operator_type : public std::enable_if<
 			binary_operator_traits<lhs_t, rhs_t>::overload , typename binary_operator_traits<lhs_t, rhs_t>::return_type >
 		{};
@@ -33,71 +25,33 @@ namespace DirectX
 		template <typename lhs_t, typename rhs_t>
 		using enable_if_binary_operator_t = typename enable_if_binary_operator_type<lhs_t, rhs_t>::type;
 
-		template <typename lhs_t, typename rhs_t>
-		using float_vector_binary_operator_t = typename float_vector_binary_operator_type<lhs_t, rhs_t>::type;
-
-		template <typename _Ty, size_t _Size>
-		inline XMVECTOR XM_CALLCONV xmfoward(const xmvector<_Ty, _Size>& xmv)
-		{ return xmv.v; };
-		template <typename _Ty>
-		inline XMVECTOR XM_CALLCONV xmfoward(const xmscalar<_Ty>& xms)
-		{ return xms.v; }
-		template <typename _Ty>
-		inline std::enable_if_t<is_mermery_type<_Ty>::value,XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
-		{ return load(mvector).v; }
-		template <typename _Ty>
-		inline std::enable_if_t<is_expression<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
-		{ return mvector.eval().v; }
-
-
-		//template <typename lhs_t, typename rhs_t>
-		//inline float_vector_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator<<(const lhs_t& lhs, const rhs_t& rhs)
-		//{
-		//	using ret_type = float_vector_binary_operator_t<lhs_t, rhs_t>;
-		//	ret_type ret;
-		//	ret.v = XMVectorAdd(xmfoward(lhs), xmfoward(rhs));
-		//	return ret;
-		//}
-
-	/*	template <typename lhs_t, typename rhs_t>
-		inline enable_if_binary_operator_t<lhs_t,rhs_t> XM_CALLCONV operator+(const lhs_t& lhs, const rhs_t& rhs)
+		namespace detail
 		{
-			using traits = binary_operator_traits<lhs_t, rhs_t>;
-			typename traits::return_type ret;
-			ret.v = vector_math::add<typename traits::scalar_type, traits::size>::invoke(xmfoward(lhs), xmfoward(rhs));
-			return ret;
+			template <typename _Ty, size_t _Size>
+			inline XMVECTOR XM_CALLCONV xmfoward(const xmvector<_Ty, _Size>& xmv)
+			{
+				return xmv.v;
+			};
+			template <typename _Ty>
+			inline XMVECTOR XM_CALLCONV xmfoward(const xmscalar<_Ty>& xms)
+			{
+				return xms.v;
+			}
+			template <typename _Ty>
+			inline std::enable_if_t<is_mermery_type<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
+			{
+				return load(mvector).v;
+			}
+			template <typename _Ty>
+			inline std::enable_if_t<is_expression<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
+			{
+				return mvector.eval().v;
+			}
 		}
 
-		template <typename lhs_t, typename rhs_t>
-		inline enable_if_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator-(const lhs_t& lhs, const rhs_t& rhs)
-		{
-			using traits = binary_operator_traits<lhs_t, rhs_t>;
-			typename traits::return_type ret;
-			ret.v = vector_math::subtract<typename traits::scalar_type, traits::size>::invoke(xmfoward(lhs), xmfoward(rhs));
-			return ret;
-		}
-
-		template <typename lhs_t, typename rhs_t>
-		inline enable_if_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator*(const lhs_t& lhs, const rhs_t& rhs)
-		{
-			using traits = binary_operator_traits<lhs_t, rhs_t>;
-			typename traits::return_type ret;
-			ret.v = vector_math::multiply<typename traits::scalar_type, traits::size>::invoke(xmfoward(lhs), xmfoward(rhs));
-			return ret;
-		}
-
-		template <typename lhs_t, typename rhs_t>
-		inline enable_if_binary_operator_t<lhs_t, rhs_t> XM_CALLCONV operator/(const lhs_t& lhs, const rhs_t& rhs)
-		{
-			using traits = binary_operator_traits<lhs_t, rhs_t>;
-			typename traits::return_type ret;
-			ret.v = vector_math::divide<typename traits::scalar_type, traits::size>::invoke(xmfoward(lhs), xmfoward(rhs));
-			return ret;
-		}*/
-
-		// Comparision functions
+		// Comparison functions
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator==(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV equal(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorEqual(lhs.v, rhs.v);
@@ -105,7 +59,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator>=(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV greater_equal(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorGreaterOrEqual(lhs.v, rhs.v);
@@ -113,7 +67,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator>(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV greater(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorGreater(lhs.v, rhs.v);
@@ -121,7 +75,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator<=(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV less_equal(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorLessOrEqual(lhs.v, rhs.v);
@@ -129,7 +83,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator<(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV less(const xmvector<float, _Size> lhs, const xmvector<float, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorLess(lhs.v, rhs.v);
@@ -171,7 +125,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator==(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV equal(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorEqualInt(lhs.v, rhs.v);
@@ -179,7 +133,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator!=(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV not_equal(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorNotEqualInt(lhs.v, rhs.v);
@@ -187,7 +141,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator&(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV and(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorAndInt(lhs.v, rhs.v);
@@ -195,7 +149,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator|(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV or(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorOrInt(lhs.v, rhs.v);
@@ -203,7 +157,7 @@ namespace DirectX
 		}
 
 		template <size_t _Size>
-		inline xmvector<uint, _Size> XM_CALLCONV operator^(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
+		inline xmvector<uint, _Size> XM_CALLCONV xor(const xmvector<uint, _Size> lhs, const xmvector<uint, _Size> rhs)
 		{
 			xmvector<uint, _Size> ret;
 			ret.v = XMVectorXorInt(lhs.v, rhs.v);

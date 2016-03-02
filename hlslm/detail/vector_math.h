@@ -99,7 +99,7 @@ namespace DirectX
 			template <size_t _Size>
 			struct divide<uint, _Size>
 			{
-				__declspec(deprecated("Dividition of integer vectors are extremmly slow, considering code to CPU instead."))
+				[[deprecated("Integer Division vectors are extremely slow, considering code to CPU instead.")]]
 				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
 				{   // Convert to memory vectors
 					XMVECTORU32 ls; XMStoreInt4A(ls.u, lhs);

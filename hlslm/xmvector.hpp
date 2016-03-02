@@ -96,6 +96,14 @@ namespace DirectX
 #endif
 		}
 
+		namespace detail
+		{
+			template <typename _TScalar, index_t _Size>
+			struct logical_bitwise_operator_base
+			{
+			};
+		};
+
 		// bunch of helpers
 		namespace detail
 		{
@@ -280,11 +288,8 @@ namespace DirectX
 				>;
 		}
 
-		using detail::valiad_swizzle_args;
-
 		template <>
 		struct is_mermery_type<DirectX::XMVECTOR> : public std::false_type {};
-
 
 		template <typename _T, size_t _Size>
 		struct XM_ALIGNATTR xmvector : public detail::swizzle_operator_base<xmvector<_T, _Size>,_Size>
@@ -438,11 +443,11 @@ namespace DirectX
 			}
 
 			inline xmscalar& operator=(const xmscalar& rhs) {
-				this->v = rhs.v;
+				this->v = rhs.v; return *this;
 			}
 
 			inline xmscalar& operator=(Scalar s) {
-				this->v = detail::rep_scalar(s);
+				this->v = detail::replicate_scalar(s);
 				return *this;
 			}
 
@@ -473,7 +478,6 @@ namespace DirectX
 
 			inline this_type& XM_CALLCONV operator /= (const this_type rhs)
 			{
-				static_assert(std::is_floating_point<scalar_type>::value, "integer division are EXTREMELT SLOW, use CPU scalar intrinsics instead");
 				this->v = vector_math::divide<scalar_type, impl_size>::invoke(this->v, rhs.v);
 				return *this;
 			}
@@ -484,7 +488,7 @@ namespace DirectX
 			}
 			inline this_type XM_CALLCONV operator - (const this_type rhs) const
 			{
-				this_type ret = *this; ret.operator-=(rhs); re-urn ret;
+				this_type ret = *this; ret.operator-=(rhs); return ret;
 			}
 			inline this_type XM_CALLCONV operator * (const this_type rhs) const
 			{
@@ -667,11 +671,13 @@ namespace DirectX
 
 		}
 
+		using xmfloat	 = xmscalar<float>;
 		using xmvector1f = xmvector<float, 1>;
 		using xmvector2f = xmvector<float, 2>;
 		using xmvector3f = xmvector<float, 3>;
 		using xmvector4f = xmvector<float, 4>;
 
+		using xmuint	 = xmscalar<uint>;
 		using xmvector1i = xmvector<uint, 1>;
 		using xmvector2i = xmvector<uint, 2>;
 		using xmvector3i = xmvector<uint, 3>;
