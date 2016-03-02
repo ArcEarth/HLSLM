@@ -127,10 +127,10 @@ namespace DirectX
 			template <size_t _Size, index_t... _SwzArgs>
 			struct valiad_swizzle_args
 			{
-				static_assert(sizeof...(_SwzArgs) <= 4, "Swizzle element count out of 4");
-				static_assert(conjunction < std::integral_constant<bool, (_SwzArgs < _Size || _SwzArgs == size_t(-1))>...>::value, "Swizzle index out of source vector size");
+				//static_assert(sizeof...(_SwzArgs) <= 4, "Swizzle element count out of 4");
+				//static_assert(conjunction < std::integral_constant<bool, (_SwzArgs < _Size || _SwzArgs == size_t(-1))>...>::value, "Swizzle index out of source vector size");
 
-				static constexpr bool value = (sizeof...(_SwzArgs) <= 4) && (conjunction < std::integral_constant<bool, _SwzArgs < _Size>...>::value);
+				static constexpr bool value = (sizeof...(_SwzArgs) <= 4) && (conjunction < std::integral_constant<bool, (_SwzArgs < _Size || _SwzArgs == size_t(-1))>...>::value);
 			};
 
 			using std::conditional;
@@ -237,7 +237,7 @@ namespace DirectX
 
 
 		template <typename _T, size_t _Size>
-		struct alignas(16) xmvector
+		struct XM_ALIGNATTR xmvector
 		{
 			//using components_name_enums = detail::components_name_enums;
 
@@ -306,51 +306,18 @@ namespace DirectX
 			inline Scalar operator[](size_t elem_index) const
 			{ return get(elem_index); }
 
-			// Dynamic swizzlers
-			inline auto XM_CALLCONV swizzle(uint _x) const
-			{
-				return xmscalar<Scalar>(_DXMEXT XMVectorSwizzle(v, _x, _x, _x, _x));
-			}
-
-			inline auto XM_CALLCONV swizzle(uint _x, uint _y) const
-			{
-				return xmvector<Scalar, 2>(_DXMEXT XMVectorSwizzle(v, _x, _y, 2, 3));
-			}
-
-			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z) const
-			{
-				return xmvector<Scalar, 3>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, 3));
-			}
-
-			inline auto XM_CALLCONV swizzle(uint _x, uint _y, uint _z, uint _w) const
-			{
-				return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, _w));
-			}
+			// Dynamic swizzler
+			inline auto XM_CALLCONV swizzle(uint _x, uint _y = 1, uint _z = 2, uint _w = 3) const
+			{ return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, _w)); }
 
 			inline this_type& XM_CALLCONV operator += (const this_type rhs)
-			{
-				this->v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v);
-				return *this;
-			}
-
+			{ this->v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 			inline this_type& XM_CALLCONV operator -= (const this_type rhs)
-			{
-				this->v = vector_math::subtract<scalar_type, size>::invoke(this->v, rhs.v);
-				return *this;
-			}
-
+			{ this->v = vector_math::subtract<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 			inline this_type& XM_CALLCONV operator *= (const this_type rhs)
-			{
-				this->v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v);
-				return *this;
-			}
-
+			{ this->v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 			inline this_type& XM_CALLCONV operator /= (const this_type rhs)
-			{
-				static_assert(std::is_floating_point<scalar_type>::value, "integer divison are EXTREMELT SLOW, use CPU scalar intrinsics instead");
-				this->v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v);
-				return *this;
-			}
+			{ this->v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 
 			inline this_type XM_CALLCONV operator + (const this_type rhs) const
 			{ this_type ret; ret.v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
@@ -359,12 +326,7 @@ namespace DirectX
 			inline this_type XM_CALLCONV operator * (const this_type rhs) const
 			{ this_type ret; ret.v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 			inline this_type XM_CALLCONV operator / (const this_type rhs) const
-			{ 
-				static_assert(std::is_floating_point<scalar_type>::value, "integer divison are EXTREMELT SLOW, use CPU scalar intrinsics instead");
-				this_type ret; 
-				ret.v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v);
-				return ret;
-			}
+			{ this_type ret; ret.v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 
 
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
@@ -407,7 +369,7 @@ namespace DirectX
 		};
 
 		template <typename _T>
-		struct alignas(16) xmscalar : public xmvector<_T, 1>
+		struct XM_ALIGNATTR xmscalar : public xmvector<_T, 1>
 		{
 			using base_type = xmvector<_T, 1>;
 			using this_type = xmscalar<_T>;
@@ -463,7 +425,7 @@ namespace DirectX
 
 			inline this_type& XM_CALLCONV operator /= (const this_type rhs)
 			{
-				static_assert(std::is_floating_point<scalar_type>::value, "integer divison are EXTREMELT SLOW, use CPU scalar intrinsics instead");
+				static_assert(std::is_floating_point<scalar_type>::value, "integer division are EXTREMELT SLOW, use CPU scalar intrinsics instead");
 				this->v = vector_math::divide<scalar_type, impl_size>::invoke(this->v, rhs.v);
 				return *this;
 			}

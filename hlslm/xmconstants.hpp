@@ -16,6 +16,18 @@ namespace DirectX
 			inline xmscalar<uint>  truei() { return xmscalar<uint>(XMVectorTrueInt()); }
 			inline xmscalar<uint>  falsei() { return xmscalar<uint>(XMVectorFalseInt()); }
 
+			template <uint i0, uint i1, uint i2 = 0, uint i3 = 0>
+			static inline xmvector<uint,4> constant() {
+				static const DirectX::XMVECTORU32 u = { i0,i1,i2,i3 };
+				return u.v;
+			}
+
+			template <int i0, int i1, int i2 = 0, int i3 = 0>
+			static inline xmvector<int, 4> constant() {
+				static const DirectX::XMVECTORI32 u = { i0,i1,i2,i3 };
+				return u.v;
+			}
+
 			namespace detail
 			{
 				inline constexpr bool is_power_of_2(uint n)

@@ -15,6 +15,13 @@ using namespace DirectX::hlsl;
 //	return result;
 //}
 
+template struct DirectX::hlsl::xmvector<float, 2>;
+template struct DirectX::hlsl::xmvector<float, 3>;
+template struct DirectX::hlsl::xmvector<float, 4>;
+//template struct DirectX::hlsl::xmvector<uint, 2>;
+//template struct DirectX::hlsl::xmvector<uint, 3>;
+template struct DirectX::hlsl::xmvector<uint, 4>;
+
 struct tag
 {};
 
@@ -26,7 +33,7 @@ struct PropertyTest
 	int& get_k() { return m_k; }
 
 	void put_k(int value) { m_k = value; }
-	void put_k(int* value) { m_k = reinterpret_cast<int>(value); }
+	void put_k(int* value) { m_k = reinterpret_cast<intptr_t>(value); }
 
 	__declspec(property(get = get_k, put = put_k)) int k;
 	//__declspec(property(get = get_k, put = put_k)) const int& k;
