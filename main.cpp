@@ -58,8 +58,84 @@ inline xmvector3f XM_CALLCONV cross(xmvector3f a, xmvector3f b)
 	return xmvector3f(DirectX::XMVector3Cross(a.v, b.v));
 }
 
+inline int negate(int x)
+{
+	return -x;
+}
+
+int sqr(int x)
+{
+	return x*x;
+}
+
+template <typename T, typename Class, T(Class::*getter)(void) const, void(Class::*setter)(T) = nullptr>
+struct Property
+{
+	inline operator T(void) const
+	{
+		return (reinterpret_cast<const Class*>(this)->*getter)();
+	}
+
+	Property& operator= (const Property&) = delete;
+	Property& operator= (Property&&) = delete;
+
+	void operator= (T value)
+	{
+		static_assert(setter != nullptr, "This property is read only");
+		(reinterpret_cast<Class*>(this)->*setter)(value);
+	}
+};
+
+struct empty_tag
+{
+
+};
+
+struct booo
+{
+	int get_k() const;
+	void set_k(int val);
+
+	int m_k;
+	Property<int,booo, &booo::get_k, &booo::set_k> k;
+
+	static constexpr size_t sizek = sizeof(decltype(k));
+	//static constexpr size_t sizetag = sizeof(decltype(tag));
+	static constexpr size_t sizemk = sizeof(decltype(m_k));
+};
+
+static constexpr size_t offk = offsetof(booo, k);
+//static constexpr size_t offtag = offsetof(booo, tag);
+static constexpr size_t offmk = offsetof(booo, m_k);
+
+inline int booo::get_k() const { return m_k; }
+
+void booo::set_k(int val)
+{
+	m_k = val;
+}
+
+template <int(*pf)(int)>
+struct foo
+{
+	static void excute(int a)
+	{
+		pf(a);
+	}
+};
+
 void OperatorTest()
 {
+	booo b;
+	b.m_k = 313;
+	int r = b.k;
+	using namespace std;
+	cout << "r = b.k = " << r << endl;
+	b.k = 317.0f;
+
+	foo<sqr>::excute(3);
+	foo<negate>::excute(3);
+
 	xmvector2f v2;
 	xmvector3f v3;
 	xmvector4f v4;
@@ -133,7 +209,7 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	v.yz() = v.yz() + v.yx();
 	//cout << "v.xy() = v.wz() + v.zw(); v ==" << v << endl;
 	return v;
-
+	
 	//using rstSwz = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<0, 1>, index_sequence<0, 0>>::type;
 	//using sorted = typename sort_sequence<index_sequence<3*4+1, 1*4+2, 2*4+0, 0*4+3>>::type;
 }
