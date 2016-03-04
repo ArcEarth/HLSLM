@@ -25,4 +25,7 @@ namespace DirectX
 	}
 }
 
+// namespace for hlsl-math libary
+namespace hlsl = DirectX::hlsl;
+
 #pragma warning(pop)

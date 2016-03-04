@@ -17,13 +17,16 @@ namespace DirectX
 		//	return ret;
 		//}
 
-		template <typename lhs_t, typename rhs_t>
-		struct enable_if_binary_operator_type : public std::enable_if<
-			binary_operator_traits<lhs_t, rhs_t>::overload , typename binary_operator_traits<lhs_t, rhs_t>::return_type >
-		{};
+		namespace traits
+		{
+			template <typename lhs_t, typename rhs_t>
+			struct enable_if_binary_operator_type : public std::enable_if<
+				binary_operator_traits<lhs_t, rhs_t>::overload, typename binary_operator_traits<lhs_t, rhs_t>::return_type >
+			{};
 
-		template <typename lhs_t, typename rhs_t>
-		using enable_if_binary_operator_t = typename enable_if_binary_operator_type<lhs_t, rhs_t>::type;
+			template <typename lhs_t, typename rhs_t>
+			using enable_if_binary_operator_t = typename enable_if_binary_operator_type<lhs_t, rhs_t>::type;
+		}
 
 		namespace detail
 		{
@@ -38,12 +41,12 @@ namespace DirectX
 				return xms.v;
 			}
 			template <typename _Ty>
-			inline std::enable_if_t<is_mermery_type<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
+			inline std::enable_if_t<traits::is_mermery_type<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
 			{
 				return load(mvector).v;
 			}
 			template <typename _Ty>
-			inline std::enable_if_t<is_expression<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
+			inline std::enable_if_t<traits::is_expression<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
 			{
 				return mvector.eval().v;
 			}

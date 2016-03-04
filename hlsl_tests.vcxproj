@@ -312,6 +312,7 @@
     <ClInclude Include="hlsl\xvector_operators.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="hlslm\detail\xmvector_impl.inl" />
     <None Include="Release\algorithms_generation_checks.asm" />
     <None Include="Release\operators_generation_checks.asm" />
   </ItemGroup>

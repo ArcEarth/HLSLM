@@ -115,6 +115,9 @@
     <None Include="Release\operators_generation_checks.asm">
       <Filter>Asm</Filter>
     </None>
+    <None Include="hlslm\detail\xmvector_impl.inl">
+      <Filter>hlslm\details</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Text Include="operators_generation_checks.txt" />

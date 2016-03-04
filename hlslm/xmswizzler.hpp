@@ -1,4 +1,10 @@
 #pragma once
+
+#ifndef _HLSL_XM_VECTOR_H
+#pragma error("This header are suppose to be inlcuded after xmvector.h, not to use solely")
+#endif
+#define _HLSL_XM_SWIZZLER_H
+
 #include "vector_traits.hpp"
 #include "xmvector.hpp"
 
@@ -12,6 +18,8 @@ namespace DirectX
 
 			template <typename IS>
 			struct swizzle_impl;
+
+			using namespace mpl;
 
 			template <index_t... SwizzleArgs>
 			struct swizzle_impl<index_sequence<SwizzleArgs...>>
@@ -172,16 +180,16 @@ namespace DirectX
 			static constexpr size_t Size = sizeof...(_SwzArgs);
 
 			static_assert(Size <= 4, "Swizzle element count out of 4");
-			static_assert(conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
+			static_assert(mpl::conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
 
 			static constexpr size_t size = Size;
 			using scalar_type = Scalar;
-			using Indices = index_sequence<_SwzArgs...>;
+			using Indices = std::index_sequence<_SwzArgs...>;
 			using index_type = Indices;
 			using xmvector_type = xmvector<Scalar, Size>;
 			using return_type = xmvector_type;
 			static constexpr bool is_lvalue = detail::is_permutation_sequence<Indices>::value;
-			using MergedIndices = conditional_t<Size == 4, Indices, overwrite_sequence_t<Indices, index_sequence<0, 1, 2, 3>>>;
+			using MergedIndices = std::conditional_t<Size == 4, Indices, mpl::overwrite_sequence_t<Indices, std::index_sequence<0, 1, 2, 3>>>;
 
 			xmswizzler() = delete;
 			// copy construct is an special form of the general assign operator
@@ -240,12 +248,12 @@ namespace DirectX
 			// any to any assignment, expcept swz == src_swz
 			// v4.yz = v3.zy;
 			template <index_t... _SrcSwz>
-			inline enable_if_t<(Size < 4) && !std::is_same<index_sequence<_SwzArgs...>, index_sequence<_SrcSwz...>>::value && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
+			inline enable_if_t<(Size < 4) && !std::is_same<std::index_sequence<_SwzArgs...>, std::index_sequence<_SrcSwz...>>::value && (sizeof...(_SwzArgs) == sizeof...(_SrcSwz))>
 				XM_CALLCONV
 				assign(const xmswizzler<Scalar, _SrcSwz...>& src)
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
-				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_SwzArgs...>, index_sequence<(_SrcSwz + 4)...>>::type;
+				using permute_sequence = typename mpl::indirect_assign<std::index_sequence<0, 1, 2, 3>, std::index_sequence<_SwzArgs...>, std::index_sequence<(_SrcSwz + 4)...>>::type;
 				this->v = detail::permute_impl<permute_sequence>::invoke(this->v, src.v);
 			}
 
@@ -257,7 +265,7 @@ namespace DirectX
 				assign(const xmswizzler<Scalar, _SrcSwz...>& src)
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
-				using permute_sequence = typename indirect_assign<index_sequence<-1, -1, -1, -1>, index_sequence<_SwzArgs...>, index_sequence<_SrcSwz...>>::type;
+				using permute_sequence = typename mpl::indirect_assign<std::index_sequence<-1, -1, -1, -1>, std::index_sequence<_SwzArgs...>, std::index_sequence<_SrcSwz...>>::type;
 				this->v = detail::swizzle_impl<permute_sequence>::invoke(src.v);
 			}
 
@@ -275,9 +283,9 @@ namespace DirectX
 			}
 
 			template <typename _Ty>
-			inline typename enable_memery_traits_t<_Ty>::void_type XM_CALLCONV store(_Ty& storage) const
+			inline typename traits::enable_memery_traits_t<_Ty>::void_type XM_CALLCONV store(_Ty& storage) const
 			{
-				using traits = memery_vector_traits<_Ty>;
+				using traits = traits::memery_vector_traits<_Ty>;
 				auto temp = this->eval();
 				using sl_impl = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
 				sl_impl::store(reinterpret_cast<typename traits::scalar*>(&storage), temp);
@@ -285,10 +293,10 @@ namespace DirectX
 
 			// Load from storage types
 			template <typename _Ty>
-			inline typename enable_memery_traits_t<_Ty>::void_type operator=(const _Ty& memery_vector)
+			inline typename traits::enable_memery_traits_t<_Ty>::void_type operator=(const _Ty& memery_vector)
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
-				using traits = memery_vector_traits<_Ty>;
+				using traits = traits::memery_vector_traits<_Ty>;
 				using sl_impl = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
 				auto temp = sl_impl::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
 				this->assign(temp);
@@ -317,7 +325,7 @@ namespace DirectX
 			// any to any assignment
 			// v4.yz = v3.zy;
 			template <index_t... _SrcSwz>
-			inline enable_if_t<(sizeof...(_SwzArgs) == sizeof...(_SrcSwz)) && !std::is_same<index_sequence<_SrcSwz...>,index_sequence<_SwzArgs...>>::value>
+			inline enable_if_t<(sizeof...(_SwzArgs) == sizeof...(_SrcSwz)) && !std::is_same<std::index_sequence<_SrcSwz...>, std::index_sequence<_SwzArgs...>>::value>
 				XM_CALLCONV operator=(const xmswizzler<Scalar, _SrcSwz...>& src)
 			{ this->assign(src); }
 
@@ -326,7 +334,7 @@ namespace DirectX
 			{
 				static_assert(is_lvalue, "Swizzle expression contains duplication (like v.xxx) is not l-valued, and can not be assign to");
 				static_assert(sizeof...(_SrcSwz) == Size, "swizzler dimension must agree");
-				using permute_sequence = typename indirect_assign<index_sequence<0, 1, 2, 3>, index_sequence<_SwzArgs...>, index_sequence<(_SrcSwz + 4)...>>::type;
+				using permute_sequence = typename mpl::indirect_assign<std::index_sequence<0, 1, 2, 3>, std::index_sequence<_SwzArgs...>, std::index_sequence<(_SrcSwz + 4)...>>::type;
 				using opr = _TOperator<scalar_type, 4>;
 				XMVECTOR i = opr::identity();
 				XMVECTOR temp = detail::permute_impl<permute_sequence>::invoke(i, src.v);

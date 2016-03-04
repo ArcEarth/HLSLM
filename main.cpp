@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-using namespace DirectX::hlsl;
+using namespace hlsl;
 
 //inline xmvector3f XM_CALLCONV wzyx(xmvector4f xmv)
 //{
