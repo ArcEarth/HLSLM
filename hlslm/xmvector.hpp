@@ -52,8 +52,13 @@ namespace DirectX
 		// swizzle_operator_base
 		namespace detail
 		{
+			struct XM_ALIGNATTR xmvector_base
+			{
+				XMVECTOR v;
+			};
+
 			template <typename _TDerived, index_t _Size>
-			struct swizzle_operator_base
+			struct XM_ALIGNATTR swizzle_operator_base : public xmvector_base
 			{
 			};
 #ifdef _SWIZZLE_DECL_
@@ -70,19 +75,19 @@ namespace DirectX
 			inline const auto& XM_CALLCONV name() const { return static_cast< const _TDerived * >( this )->swizzle<__VA_ARGS__ >(); }
 
 			template <typename _TDerived>
-			struct swizzle_operator_base<_TDerived, 2>
+			struct XM_ALIGNATTR swizzle_operator_base<_TDerived, 2> : public xmvector_base
 			{
 				#include "detail/swizzles_def_2.h"
 			};
 
 			template <typename _TDerived>
-			struct swizzle_operator_base<_TDerived, 3>
+			struct XM_ALIGNATTR swizzle_operator_base<_TDerived, 3> : public xmvector_base
 			{
 				#include "detail/swizzles_def_3.h"
 			};
 
 			template <typename _TDerived>
-			struct swizzle_operator_base<_TDerived, 4>
+			struct XM_ALIGNATTR swizzle_operator_base<_TDerived, 4> : public xmvector_base
 			{
 				#include "detail/swizzles_def_4.h"
 			};
@@ -98,9 +103,96 @@ namespace DirectX
 
 		namespace detail
 		{
-			template <typename _TScalar, index_t _Size>
-			struct logical_bitwise_operator_base
+			template <typename _TDerived, typename _TScalar, index_t _Size>
+			struct logical_bitwise_operator_base : public swizzle_operator_base<_TDerived, _Size>
 			{
+			};
+
+			template <index_t _Size>
+			struct logical_bitwise_operator_base<xmvector<uint,_Size>, uint, _Size>
+				: public swizzle_operator_base<xmvector<uint, _Size>, _Size>
+			{
+				inline xmvector<uint, _Size>& XM_CALLCONV operator&= (const xmvector<uint, _Size> rhs)
+				{
+					this->v = vector_math::and<uint, _Size>::invoke(this->v, rhs.v);
+					return static_cast<xmvector<uint, _Size>&>(*this);
+				}
+				inline xmvector<uint, _Size>& XM_CALLCONV operator|= (const xmvector<uint, _Size> rhs)
+				{
+					this->v = vector_math::or<uint, _Size>::invoke(this->v, rhs.v);
+					return static_cast<xmvector<uint, _Size>&>(*this);
+				}
+				inline xmvector<uint, _Size>& XM_CALLCONV operator^= (const xmvector<uint, _Size> rhs)
+				{
+					this->v = vector_math::xor<uint, _Size>::invoke(this->v, rhs.v);
+					return static_cast<xmvector<uint, _Size>&>(*this);
+				}
+				inline xmvector<uint, _Size> XM_CALLCONV operator& (const xmvector<uint, _Size> rhs) const
+				{
+					xmvector<uint, _Size> ret;
+					ret.v = vector_math::and<uint,_Size>::invoke(this->v, rhs.v);
+					return ret;
+				}
+				inline xmvector<uint, _Size> XM_CALLCONV operator| (const xmvector<uint, _Size> rhs) const
+				{
+					xmvector<uint, _Size> ret;
+					ret.v = vector_math::or<uint, _Size>::invoke(this->v, rhs.v);
+					return ret;
+				}
+				inline xmvector<uint, _Size> XM_CALLCONV operator^ ( const xmvector<uint, _Size> rhs) const
+				{
+					xmvector<uint, _Size> ret;
+					ret.v = vector_math::xor<uint, _Size>::invoke(this->v, rhs.v);
+					return ret;
+				}
+			};
+
+			template <index_t... _SwzArg, size_t _Size>
+			struct logical_bitwise_operator_base<xmswizzler<uint, _SwzArg...>, uint, _Size>
+				: public swizzle_operator_base<xmswizzler<uint, _SwzArg...>, _Size>
+			{
+			private:
+				using Scalar = uint;
+				using Derived = xmswizzler<uint, _SwzArg...>;
+				using xmvector_type = xmvector<uint, sizeof...(_SwzArg)>;
+			public:
+				// Case of swizzler + vector(scalar)
+				inline xmvector_type XM_CALLCONV operator & (const xmvector_type rhs) const
+				{ return rhs.operator&(static_cast<const Derived&>(*this)); }
+				inline xmvector_type XM_CALLCONV operator | (const xmvector_type rhs) const
+				{ return rhs.operator|(static_cast<const Derived&>(*this)); }
+				inline xmvector_type XM_CALLCONV operator ^ (const xmvector_type rhs) const
+				{ return rhs.operator^(static_cast<const Derived&>(*this)); }
+
+				template <index_t... _SrcSwz> inline void XM_CALLCONV operator&=(const xmswizzler<Scalar, _SrcSwz...>& src)
+				{
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::and, _SrcSwz...>(src);
+				}
+				template <index_t... _SrcSwz> inline void XM_CALLCONV operator|=(const xmswizzler<Scalar, _SrcSwz...>& src)
+				{
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::or, _SrcSwz...>(src);
+				}
+				template <index_t... _SrcSwz> inline void XM_CALLCONV operator^=(const xmswizzler<Scalar, _SrcSwz...>& src)
+				{
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::xor, _SrcSwz...>(src);
+				}
+
+				// identity to any assignment
+				inline void XM_CALLCONV operator&=(const xmvector_type rhs)
+				{
+					auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+					this->operator&=(srcv);
+				}
+				inline void XM_CALLCONV operator|=(const xmvector_type rhs)
+				{
+					auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+					this->operator|=(srcv);
+				}
+				inline void XM_CALLCONV operator^=(const xmvector_type rhs)
+				{
+					auto& srcv = reinterpret_cast<const detail::swizzle_from_indecis_t<Scalar, std::make_index_sequence<Size>>&>(rhs);
+					this->operator^=(srcv);
+				}
 			};
 		};
 
@@ -291,11 +383,28 @@ namespace DirectX
 		template <>
 		struct is_mermery_type<DirectX::XMVECTOR> : public std::false_type {};
 
+		// strong-typed workload for vector math
+		// SIMD register vector type wrapper for __mm128 / float32x4_t / etc...
+		// features:
+		// Element(s)-Select-Swizzle methods, like hlsl, v.yw() = v.xx();
+		// Arthmetic type: operator [+-*/] are overloaded to element wise 
+		// Bitwise type: operator [&|^] are overloaded for integer vectors
+		// Vector type: operator[](int) are overloaded, but be aware of the poor performance
+		// example:
+		// xmvector<float,4> v = {.0f,.1f,0.2f,0.3f};
+		// v.yz() *= v.xx(); 
+		// Implemtation detail:
+		// Why not inherit xmvector_base here but through the detail::swizzle_operator_base ?
+		// An struct that contains an vector can be pass by register through __vectorcall
+		// We refer to this type of struct as "vector struct"
+		// "vector struct" should be construct by following rules
+		// 0) ! empty structs are __not__ "vector struct" !
+		// 1) A struct does not have any inherience, and only contains __mm128(i/d) field
+		// 2) A struct inherit from only "vector struct" types, and only contains __mm128(i/d) field
 		template <typename _T, size_t _Size>
-		struct XM_ALIGNATTR xmvector : public detail::swizzle_operator_base<xmvector<_T, _Size>,_Size>
+		struct XM_ALIGNATTR xmvector : public detail::logical_bitwise_operator_base<xmvector<_T, _Size>,_T,_Size>
 		{
 			//using components_name_enums = detail::components_name_enums;
-
 			using this_type = xmvector<_T, _Size>;
 			static constexpr size_t Size = _Size;
 			static constexpr size_t size = Size;
@@ -305,8 +414,6 @@ namespace DirectX
 			using intrinsic_vector = detail::get_intrinsic_vector_t<_T, _Size>;
 
 			static_assert(Size > 0 && sizeof(Scalar) * Size <= 16, "Instantiate xmvector of dimension 0 or greater than 4.");
-
-			XMVECTOR v;
 
 			inline xmvector() = default;
 
@@ -327,14 +434,28 @@ namespace DirectX
 				return v;
 			}
 
-			template <int _NewSize, typename _NewType = Scalar>
-			inline xmvector<_NewType, _NewSize> as() const {
+			// reinterpret cast this vector
+			template <typename _NewType, size_t _NewSize = _Size>
+			inline const xmvector<_NewType, _NewSize>& as() const {
 				return reinterpret_cast<const xmvector<_NewType, _NewSize>&>(*this);
 			}
 
-			template <int _NewSize, typename _NewType = Scalar>
+			// reinterpret cast this vector
+			template <typename _NewType, size_t _NewSize = _Size>
 			inline xmvector<_NewType, _NewSize>& as() {
 				return reinterpret_cast<xmvector<_NewType, _NewSize>&>(*this);
+			}
+
+			// reinterpret cast this vector
+			template <size_t _NewSize>
+			inline const xmvector<Scalar, _NewSize>& as() const {
+				return reinterpret_cast<const xmvector<Scalar, _NewSize>&>(*this);
+			}
+
+			// reinterpret cast this vector
+			template <size_t _NewSize>
+			inline xmvector<Scalar, _NewSize>& as() {
+				return reinterpret_cast<xmvector<Scalar, _NewSize>&>(*this);
 			}
 
 			template <int _NewSize>
@@ -353,11 +474,28 @@ namespace DirectX
 				assert(elem_index < Size);
 				return detail::get<Scalar>(this->v, elem_index);
 			}
+
+			template<index_t elem_index>
+			inline Scalar get() const
+			{
+				return detail::get<Scalar, elem_index>(this->v);
+			}
+
 			inline void set(size_t elem_index, Scalar value)
 			{
 				assert(elem_index < Size);
 				this->v = detail::set<Scalar>(this->v, elem_index, value);
 			}
+
+			template<index_t elem_index>
+			inline void set(Scalar value) const
+			{
+				return detail::set<Scalar, elem_index>(this->v,value);
+			}
+
+#if !defined(_XM_NO_INTRINSICS_)
+			[[deprecated("For compile constant index, use method v.x()/etc... or get<index>() instead.")]]
+#endif
 			inline Scalar operator[](size_t elem_index) const
 			{ return get(elem_index); }
 

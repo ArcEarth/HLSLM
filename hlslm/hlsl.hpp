@@ -1,7 +1,7 @@
 #pragma once
 #include "vector_traits.hpp"
 #pragma warning(push)
-//#pragma warning(disable:4996)
+#pragma warning(disable:4996)
 #include "xmvector.hpp"
 #include "xmswizzler.hpp"
 #include "xmoperators.hpp"

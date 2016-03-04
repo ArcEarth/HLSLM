@@ -8,19 +8,47 @@ namespace DirectX
 		{
 			template <typename _TScalar, size_t _Size>
 			struct add;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
 			struct subtract;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
 			struct multiply;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
 			struct divide;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
 			template <typename _TScalar, size_t _Size>
 			struct madd;
-			//{ static_assert(false, "This vector math is not implemented yet"); };
+
+			template <typename _TScalar, size_t _Size>
+			struct and
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorAndInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+				static inline XMVECTOR identity() { return g_XMNegOneMask.v; }
+			};
+
+			template <typename _TScalar, size_t _Size>
+			struct or
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorOrInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+				static inline XMVECTOR identity() { return XMVectorZero(); }
+			};
+
+			template <typename _TScalar, size_t _Size>
+			struct xor
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
+				{
+					return XMVectorXorInt(lhs, rhs);
+				}
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0, FXMVECTOR v1) { return invoke(v0, v1); };
+				static inline XMVECTOR identity() { return XMVectorZero(); }
+			};
 
 
 			template <size_t _Size>

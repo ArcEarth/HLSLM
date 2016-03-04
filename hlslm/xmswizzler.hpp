@@ -165,7 +165,7 @@ namespace DirectX
 		// instead, use function swizzle on an existed xmvector to construct
 		// helps to optimize in the case case of masked/swizzled assignment: v.yzw = p, v.wyz = p.xzw;
 		template <typename _T, index_t... _SwzArgs>
-		struct XM_ALIGNATTR xmswizzler : public detail::swizzle_operator_base<xmswizzler<_T, _SwzArgs...>, sizeof...(_SwzArgs)>
+		struct XM_ALIGNATTR xmswizzler : public detail::logical_bitwise_operator_base<xmswizzler<_T, _SwzArgs...>, _T, sizeof...(_SwzArgs)>
 		{
 			using this_type = xmswizzler<_T, _SwzArgs...>;
 			using Scalar = _T;
@@ -182,8 +182,6 @@ namespace DirectX
 			using return_type = xmvector_type;
 			static constexpr bool is_lvalue = detail::is_permutation_sequence<Indices>::value;
 			using MergedIndices = conditional_t<Size == 4, Indices, overwrite_sequence_t<Indices, index_sequence<0, 1, 2, 3>>>;
-
-			XMVECTOR v;
 
 			xmswizzler() = delete;
 			// copy construct is an special form of the general assign operator

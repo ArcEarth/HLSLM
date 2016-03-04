@@ -35,14 +35,45 @@ static constexpr size_t szVector2 = sizeof(xmvector2f);
 //	__declspec(property(get = get_k, put = put_k)) int k;
 //	//__declspec(property(get = get_k, put = put_k)) const int& k;
 //};
+//
 
-xmvector4f XM_CALLCONV SetX_XM(xmvector4f v, float x)
+//#include <xmmintrin.h>
+//struct empty_struct
+//{
+//};
+//
+//struct vector_struct
+//{
+//	__m128 mts0;
+//};
+//
+//struct hva2 : public empty_struct
+//{
+//	__m128 array[2];
+//};    // 2 element HVA type on __m128, inherit an empty struct
+//
+//struct hva3 : public vector_struct
+//{
+//	__m128 array[2];
+//};    // 3 element HVA type on __m128
+//
+//
+//__m128 __vectorcall test2(const hva2 v) // error C2719: 'v': formal parameter with requested alignment of 16 won't be aligned
+//{
+//	return v.array[0];
+//}
+//
+//__m128 __vectorcall test3(const hva3 v) // ok
+//{
+//	return v.array[0];
+//}
+
+
+inline xmvector3f XM_CALLCONV cross(xmvector3f a, xmvector3f b)
 {
-	//float vx = swizzle<1>(v);
-	xmvector4f result;
-	result.v = DirectX::XMVectorSetX(v.v, x);
-	return result;
+	return xmvector3f(DirectX::XMVector3Cross(a.v, b.v));
 }
+
 
 using std::integer_sequence;
 
@@ -56,11 +87,6 @@ struct test<integer_sequence<int,a...>, integer_sequence<int, b...>>
 };
 
 using abtype = typename test<integer_sequence<int, 1, 2>, integer_sequence<int, 2, 3>>::type;
-
-inline xmvector3f XM_CALLCONV cross(xmvector3f a, xmvector3f b)
-{
-	return xmvector3f(DirectX::XMVector3Cross(a.v, b.v));
-}
 
 inline int negate(int x)
 {
@@ -150,6 +176,11 @@ void OperatorTest()
 	vi4 /= vi4;
 	xor<4>(vi4, vi4.wzyx());
 
+	vi4 = vi4 ^ vi4;
+	vi4 = vi4 & vi4.yxwz();
+	vi4 ^= xmuint(5);
+	vi4.yxz() ^= v4.as<uint>().zyx();
+
 	v2 = v2 + v2;
 	v2 = v2 + v0;
 	v2 = v2 + v4.xy();
@@ -230,23 +261,23 @@ int __cdecl main( int argc, char *argv[] )
 
 	ret0 = SetX_HL(xmv, 5.0f);
 
-	ret0.store(f4);
+	//ret0.store(f4);
 
-	std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
+	//std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
 
-	ret1 = SetX_XM(xmv, 5.0f);
+	//ret1 = SetX_XM(xmv, 5.0f);
 
-	DirectX::XMStoreFloat4A(&f3, ret1.v);
+	//DirectX::XMStoreFloat4A(&f3, ret1.v);
 
-	std::cout << f3.x << ',' << f3.y << ',' << f3.z << ',' << f3.w << std::endl;
+	//std::cout << f3.x << ',' << f3.y << ',' << f3.z << ',' << f3.w << std::endl;
 	//xmvector3f result = wzyx(xmv);
 
-	PropertyTest p;
-	auto& s = p.k;
+	//PropertyTest p;
+	//auto& s = p.k;
 
-	const auto& cp = p;
+	//const auto& cp = p;
 
-	auto& cs = cp.k;
+	//auto& cs = cp.k;
 	//xmvector2f sar = swizzle_assign(make_swizzler<2, 1>(result), make_swizzler<2, 1>(xmv));
 
 	//xmvector4i xmvi(1);
