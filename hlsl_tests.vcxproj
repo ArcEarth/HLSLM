@@ -290,9 +290,9 @@
     <ClInclude Include="hlslm\detail\special_swizzle.h" />
     <ClInclude Include="hlslm\detail\vector_math.h" />
     <ClInclude Include="hlslm\hlsl.hpp" />
-    <ClInclude Include="hlslm\load.hpp" />
+    <ClInclude Include="hlslm\load_store.hpp" />
     <ClInclude Include="hlslm\storage_classes.hpp" />
-    <ClInclude Include="hlslm\vector_traits.hpp" />
+    <ClInclude Include="hlslm\traits.hpp" />
     <ClInclude Include="hlslm\xmconstants.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
     <ClInclude Include="hlslm\xmswizzler.hpp" />

@@ -16,6 +16,34 @@ namespace DirectX
 			struct divide;
 			template <typename _TScalar, size_t _Size>
 			struct madd;
+			template <typename _TScalar, size_t _Size>
+			struct negate;
+
+			template <size_t _Size>
+			struct negate<float,_Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs)
+				{ return XMVectorNegate(lhs); }
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0) { return invoke(v0); };
+			};
+
+			template <size_t _Size>
+			struct negate<uint, _Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs)
+				{ return XMVectorXorInt(lhs, DirectX::g_XMNegativeZero.v); } // This toggles the sign bit of the integer value
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0) { return invoke(v0); };
+			};
+
+			template <size_t _Size>
+			struct negate<int, _Size>
+			{
+				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs)
+				{
+					return XMVectorXorInt(lhs, DirectX::g_XMNegativeZero.v);
+				} // This toggles the sign bit of the integer value
+				inline auto XM_CALLCONV operator()(FXMVECTOR v0) { return invoke(v0); };
+			};
 
 			template <typename _TScalar, size_t _Size>
 			struct and

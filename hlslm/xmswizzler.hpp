@@ -5,7 +5,7 @@
 #endif
 #define _HLSL_XM_SWIZZLER_H
 
-#include "vector_traits.hpp"
+#include "traits.hpp"
 #include "xmvector.hpp"
 
 namespace DirectX
@@ -342,6 +342,8 @@ namespace DirectX
 			}
 
 			// Case of swizzler + vector(scalar)
+			inline xmvector_type XM_CALLCONV operator - () const
+			{ return this->eval().operator-(); }
 			inline xmvector_type XM_CALLCONV operator + (const xmvector_type rhs) const
 			{ return rhs.operator+(*this); }
 			inline xmvector_type XM_CALLCONV operator - (const xmvector_type rhs) const

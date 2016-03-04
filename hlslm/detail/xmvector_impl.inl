@@ -370,6 +370,7 @@ namespace DirectX
 				__mvector<Scalar, Size>
 				>;
 		}
+
 #pragma endregion
 	}
 }

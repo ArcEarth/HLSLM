@@ -1,6 +1,6 @@
 #pragma once
 
-#include "vector_traits.hpp"
+#include "traits.hpp"
 #include "xmvector.hpp"
 // For XMVectorAddInt etc...
 #include <DirectXMathExtend.h>
@@ -9,14 +9,6 @@ namespace DirectX
 {
 	namespace hlsl
 	{
-		//template <size_t _Size>
-		//inline xmvector<float, _Size> XM_CALLCONV operator-(const xmvector<float, _Size> xmv)
-		//{
-		//	xmvector<float, _Size> ret;
-		//	ret.v = XMVectorNegate(xmv.v);
-		//	return ret;
-		//}
-
 		namespace traits
 		{
 			template <typename lhs_t, typename rhs_t>
@@ -41,7 +33,7 @@ namespace DirectX
 				return xms.v;
 			}
 			template <typename _Ty>
-			inline std::enable_if_t<traits::is_mermery_type<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
+			inline std::enable_if_t<traits::is_memory_type<_Ty>::value, XMVECTOR> XM_CALLCONV xmfoward(const _Ty& mvector)
 			{
 				return load(mvector).v;
 			}

@@ -1,12 +1,26 @@
 #pragma once
-#include "vector_traits.hpp"
+#define __AVX2__ 1
+#define __AVX__  1
+#define __SSE4__ 1
+#define __SSE3__ 1
+
+#include <DirectXMath.h>
+#define _NO_SIMPLE_VECTORS
+#include <DirectXMathExtend.h>
+#include <DirectXMathIntrinsics.h>
+#ifndef _DXMEXT
+#define _DXMEXT
+#endif
+#define _XM_VECTOR_USE_LOAD_STORE_HELPER_
+
+#include "traits.hpp"
 #pragma warning(push)
 #pragma warning(disable:4996)
 #include "xmvector.hpp"
 #include "xmswizzler.hpp"
 #include "xmoperators.hpp"
 #include "xmconstants.hpp"
-#include "load.hpp"
+#include "load_store.hpp"
 
 // explicit instantiation
 namespace DirectX

@@ -59,9 +59,6 @@
     <ClInclude Include="hlsl\xm_traits.hpp">
       <Filter>hlsl</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\vector_traits.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\xmmatrix.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
@@ -80,9 +77,6 @@
     <ClInclude Include="hlslm\detail\swizzles_def_4.h">
       <Filter>hlslm\details</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\storage_classes.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\hlsl.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
@@ -98,14 +92,20 @@
     <ClInclude Include="hlslm\xmconstants.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\load.hpp">
-      <Filter>hlslm</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\xmswizzler.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
     <ClInclude Include="hlslm\detail\vector_math.h">
       <Filter>hlslm\details</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\load_store.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\traits.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\storage_classes.hpp">
+      <Filter>hlslm</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

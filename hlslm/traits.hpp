@@ -218,23 +218,23 @@ namespace DirectX
 			using binary_operator_return_type = typename binary_operator_traits<lhs_t, rhs_t>::return_type;
 
 			template <typename _Ty>
-			struct is_mermery_type : public std::true_type {};
+			struct is_memory_type : public std::true_type {};
 
 			// Floats and int are load into registers
 			template <>
-			struct is_mermery_type<float> : std::false_type {};
+			struct is_memory_type<float> : std::false_type {};
 
 			template <>
-			struct is_mermery_type<uint> : std::false_type {};
+			struct is_memory_type<uint> : std::false_type {};
 
 			template <typename _Ty>
-			struct is_mermery_type<xmscalar<_Ty>> : std::false_type {};
+			struct is_memory_type<xmscalar<_Ty>> : std::false_type {};
 
 			template <typename _Ty, size_t _Size>
-			struct is_mermery_type<xmvector<_Ty, _Size>> : std::false_type {};
+			struct is_memory_type<xmvector<_Ty, _Size>> : std::false_type {};
 
 			template <typename _Ty, index_t... _SwzArgs>
-			struct is_mermery_type<xmswizzler<_Ty, _SwzArgs...>> : std::false_type {};
+			struct is_memory_type<xmswizzler<_Ty, _SwzArgs...>> : std::false_type {};
 
 			template <typename _Ty>
 			struct memery_vector_traits : public vector_traits<_Ty>
@@ -261,7 +261,7 @@ namespace DirectX
 			};
 
 			template <typename _Ty>
-			struct enable_memery_traits : public std::enable_if<is_mermery_type<_Ty>::value, typename memery_vector_traits<_Ty>>
+			struct enable_memery_traits : public std::enable_if<is_memory_type<_Ty>::value, typename memery_vector_traits<_Ty>>
 			{
 			};
 

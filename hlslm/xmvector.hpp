@@ -2,21 +2,8 @@
 #ifndef _HLSL_XM_VECTOR_H
 #define _HLSL_XM_VECTOR_H
 
-#define __AVX2__ 1
-#define __AVX__  1
-#define __SSE4__ 1
-#define __SSE3__ 1
+#include "detail/xmvector_impl.inl"
 
-#include <DirectXMath.h>
-#define _NO_SIMPLE_VECTORS
-#include <DirectXMathExtend.h>
-#include <DirectXMathIntrinsics.h>
-#ifndef _DXMEXT
-#define _DXMEXT
-#endif
-#define _XM_VECTOR_USE_LOAD_STORE_HELPER_
-
-#include "detail\xmvector_impl.inl"
 #if defined(_M_IX86) && defined(_DEBUG)
 #define XM_VECTOR_LOAD_CTOR explicit
 #else
@@ -159,6 +146,9 @@ namespace DirectX
 			inline auto XM_CALLCONV swizzle(uint _x, uint _y = 1, uint _z = 2, uint _w = 3) const
 			{ return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, _w)); }
 
+			inline this_type XM_CALLCONV operator - () const
+			{ this_type ret; ret.v = vector_math::negate<scalar_type, size>::invoke(this->v); return ret; }
+
 			inline this_type& XM_CALLCONV operator += (const this_type rhs)
 			{ this->v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 			inline this_type& XM_CALLCONV operator -= (const this_type rhs)
@@ -181,21 +171,21 @@ namespace DirectX
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
 
 			template <typename _Ty, typename _TRet = void>
-			using enable_if_loadable = std::enable_if_t<traits::is_mermery_type<_Ty>::value && (traits::memery_vector_traits<_Ty>::cols >= Size) && std::is_same<Scalar,typename traits::memery_vector_traits<_Ty>::scalar>::value, _TRet>;
+			using enable_if_loadable = std::enable_if_t<traits::is_memory_type<_Ty>::value && (traits::memery_vector_traits<_Ty>::cols >= Size) && std::is_same<Scalar,typename traits::memery_vector_traits<_Ty>::scalar>::value, _TRet>;
 
 			// Load from storage types
 			template <typename _Ty>
-			inline enable_if_loadable<_Ty> operator=(const _Ty& memery_vector)
+			inline enable_if_loadable<_Ty> operator=(const _Ty& memory_vector)
 			{
 				using traits = traits::memery_vector_traits<_Ty>;
 				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, Size>;
-				this->v = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memery_vector));
+				this->v = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memory_vector));
 			}
 
 			// explicit is an walk around for compiler internal error in x86|Debug mode
 			template <typename _Ty>
-			inline XM_VECTOR_LOAD_CTOR xmvector(const _Ty& memery_vector, enable_if_loadable<_Ty> *junk = nullptr)
-			{ this->operator=<_Ty>(memery_vector); }
+			inline XM_VECTOR_LOAD_CTOR xmvector(const _Ty& memory_vector, enable_if_loadable<_Ty> *junk = nullptr)
+			{ this->operator=<_Ty>(memory_vector); }
 
 			template <typename _Ty>
 			inline typename traits::enable_memery_traits_t<_Ty>::void_type XM_CALLCONV store(_Ty& storage) const
@@ -274,6 +264,11 @@ namespace DirectX
 			{
 				this->v = vector_math::divide<scalar_type, impl_size>::invoke(this->v, rhs.v);
 				return *this;
+			}
+
+			inline this_type XM_CALLCONV operator - () const
+			{
+				this_type ret; ret.v = vector_math::negate<scalar_type, impl_size>::invoke(this->v); return ret;
 			}
 
 			inline this_type XM_CALLCONV operator + (const this_type rhs) const
