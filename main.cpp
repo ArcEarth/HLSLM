@@ -260,7 +260,9 @@ int __cdecl main( int argc, char *argv[] )
 	xmv.v = { 100.f,200.f,300.f,400.f };
 
 	ret0 = SetX_HL(xmv, 5.0f);
+	OperatorTest();
 
+	system("PAUSE");
 	//ret0.store(f4);
 
 	//std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;

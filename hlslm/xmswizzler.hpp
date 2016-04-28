@@ -173,7 +173,8 @@ namespace DirectX
 		// instead, use function swizzle on an existed xmvector to construct
 		// helps to optimize in the case case of masked/swizzled assignment: v.yzw = p, v.wyz = p.xzw;
 		template <typename _T, index_t... _SwzArgs>
-		struct XM_ALIGNATTR xmswizzler : public detail::logical_bitwise_operator_base<xmswizzler<_T, _SwzArgs...>, _T, sizeof...(_SwzArgs)>
+		struct XM_ALIGNATTR XM_EMPTY_BASE xmswizzler 
+			: public detail::logical_bitwise_operator_base<xmswizzler<_T, _SwzArgs...>, _T, sizeof...(_SwzArgs)>
 		{
 			using this_type = xmswizzler<_T, _SwzArgs...>;
 			using Scalar = _T;

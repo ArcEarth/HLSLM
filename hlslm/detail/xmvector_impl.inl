@@ -6,6 +6,8 @@
 #include "mpl.hpp"
 #include "vector_math.h"
 
+#define XM_EMPTY_BASE __declspec(empty_bases)
+
 namespace DirectX
 {
 	namespace hlsl
@@ -23,7 +25,7 @@ namespace DirectX
 		template <typename _T, index_t... _SwzArgs>
 		struct xmswizzler;
 
-#pragma region details: vector classes base for __mm128 vectors / operators like +-*/&|^ / swizzle operator defines
+#pragma region details: vector classes base for __mm128 vectors / operators like +-* /&|^ / swizzle operator defines
 		// definition of special swizzle operators
 		// like v2.xy, v2.yz, v2.xxyy etc...
 		// swizzle_operator_base
@@ -35,7 +37,7 @@ namespace DirectX
 			};
 
 			template <typename _TDerived, index_t _Size>
-			struct XM_ALIGNATTR swizzle_operator_base : public xmvector_base
+			struct XM_ALIGNATTR XM_EMPTY_BASE swizzle_operator_base : public xmvector_base
 			{
 			};
 #ifdef _SWIZZLE_DECL_
@@ -81,12 +83,12 @@ namespace DirectX
 		namespace detail
 		{
 			template <typename _TDerived, typename _TScalar, index_t _Size>
-			struct logical_bitwise_operator_base : public swizzle_operator_base<_TDerived, _Size>
+			struct XM_EMPTY_BASE logical_bitwise_operator_base : public swizzle_operator_base<_TDerived, _Size>
 			{
 			};
 
 			template <index_t _Size>
-			struct logical_bitwise_operator_base<xmvector<uint, _Size>, uint, _Size>
+			struct XM_EMPTY_BASE logical_bitwise_operator_base<xmvector<uint, _Size>, uint, _Size>
 				: public swizzle_operator_base<xmvector<uint, _Size>, _Size>
 			{
 				inline xmvector<uint, _Size>& XM_CALLCONV operator&= (const xmvector<uint, _Size> rhs)
@@ -125,7 +127,7 @@ namespace DirectX
 			};
 
 			template <index_t... _SwzArg, size_t _Size>
-			struct logical_bitwise_operator_base<xmswizzler<uint, _SwzArg...>, uint, _Size>
+			struct XM_EMPTY_BASE logical_bitwise_operator_base<xmswizzler<uint, _SwzArg...>, uint, _Size>
 				: public swizzle_operator_base<xmswizzler<uint, _SwzArg...>, _Size>
 			{
 			private:

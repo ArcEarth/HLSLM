@@ -45,7 +45,7 @@ namespace DirectX
 		// 1) A struct does not have any inherience, and only contains __mm128(i/d) field
 		// 2) A struct inherit from only "vector struct" types, and only contains __mm128(i/d) field
 		template <typename _T, size_t _Size>
-		struct XM_ALIGNATTR xmvector : public detail::logical_bitwise_operator_base<xmvector<_T, _Size>,_T,_Size>
+		struct XM_ALIGNATTR XM_EMPTY_BASE xmvector : public detail::logical_bitwise_operator_base<xmvector<_T, _Size>,_T,_Size>
 		{
 			//using components_name_enums = detail::components_name_enums;
 			using this_type = xmvector<_T, _Size>;
@@ -206,7 +206,7 @@ namespace DirectX
 		};
 
 		template <typename _T>
-		struct XM_ALIGNATTR xmscalar : public xmvector<_T, 1>
+		struct XM_ALIGNATTR XM_EMPTY_BASE xmscalar : public xmvector<_T, 1>
 		{
 			using base_type = xmvector<_T, 1>;
 			using this_type = xmscalar<_T>;
