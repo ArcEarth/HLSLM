@@ -19,6 +19,32 @@ static constexpr size_t szVector4 = sizeof(xmvector4f);
 static constexpr size_t szVector3 = sizeof(xmvector3f);
 static constexpr size_t szVector2 = sizeof(xmvector2f);
 
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, DirectX::FXMVECTOR v)
+{
+	os << '(' << (float)v.m128_f32[0] << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector2f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector3f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ')';
+	return os;
+}
+
+std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector4f v)
+{
+	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ',' << (float)v.w() << ')';
+	return os;
+}
+
+
 //struct tag
 //{};
 //
@@ -154,6 +180,17 @@ struct foo
 	}
 };
 
+static constexpr size_t get_dimension(size_t a, size_t b)
+{
+	return
+		a == b ? a :
+		a == 1 ? b :
+		b == 1 ? a :
+		0;
+};
+
+static constexpr size_t sss = get_dimension(1, 5);
+
 void OperatorTest()
 {
 	booo b;
@@ -165,21 +202,32 @@ void OperatorTest()
 	foo<sqr>::excute(3);
 	foo<negate>::excute(3);
 
-	xmvector2f v2;
-	xmvector3f v3;
+	xmvector2f v2 = {.0f, 1.0f};
+	xmvector3f v3 = {-1.0f, -1.0f, -1.0f};
 	xmvector4f v4;
 	xmscalar<float> v0;
-	float		scl;
+	float		scl = 2.0f;
 	xmvector4i vi4(1);
+	xmfloat		xscl = 1.0f;
+
+
+
+	static constexpr bool is_over = traits::binary_operator_traits<xmvector2f, float>::overload;
+	v3.xy() = min(v2,1.0f);
+	//xmfloat rv3 = rcp(1.0f); // error
+	xmfloat rv3 = rcp(xmfloat(1.0f));
+	rv3 += rv3;
+
+	cout << v3;
 
 	uint iarray[4];
 	vi4 /= vi4;
-	xor<4>(vi4, vi4.wzyx());
+	vi4 = xor(vi4, vi4.wzyx());
 
 	vi4 = vi4 ^ vi4;
 	vi4 = vi4 & vi4.yxwz();
 	vi4 ^= xmuint(5);
-	vi4.yxz() ^= v4.as<uint>().zyx();
+	vi4.yxz() ^= v4.cast<uint>().zyx();
 
 	v2 = v2 + v2;
 	v2 = v2 + v0;
@@ -212,30 +260,6 @@ void OperatorTest()
 	v0 += v0;
 	v0 += load(scl);
 	//v0 += v2; //error
-}
-
-std::ostream& XM_CALLCONV operator << (std::ostream& os, DirectX::FXMVECTOR v)
-{
-	os << '(' << (float)v.m128_f32[0] << ')';
-	return os;
-}
-
-std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector2f v)
-{
-	os << '(' << (float)v.x() << ',' << (float)v.y() << ')';
-	return os;
-}
-
-std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector3f v)
-{
-	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ')';
-	return os;
-}
-
-std::ostream& XM_CALLCONV operator << (std::ostream& os, const xmvector4f v)
-{
-	os << '(' << (float)v.x() << ',' << (float)v.y() << ',' << (float)v.z() << ',' << (float)v.w() << ')';
-	return os;
 }
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)

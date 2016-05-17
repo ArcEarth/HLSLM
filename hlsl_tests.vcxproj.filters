@@ -9,9 +9,6 @@
     <ClCompile Include="swizzle_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="hlsl">
-      <UniqueIdentifier>{793205f7-0ea7-4d46-91bf-36b1d5b19c8a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Asm">
       <UniqueIdentifier>{f66e43c1-950f-4cc6-af51-7f56b70a4070}</UniqueIdentifier>
     </Filter>
@@ -23,42 +20,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hlsl\float_xvector.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\float_math.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\hlsl.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\math.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\traits.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\matrix.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\vector.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\array_traits.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\xvector_operators.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\vector_operators.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\load_store.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlsl\xm_traits.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
     <ClInclude Include="hlslm\xmmatrix.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
@@ -106,15 +67,6 @@
     </ClInclude>
     <ClInclude Include="hlslm\storage_classes.hpp">
       <Filter>hlslm</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\cwiseoperators.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\xmquaternion.hpp">
-      <Filter>hlsl</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\xmselector.hpp">
-      <Filter>hlsl</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

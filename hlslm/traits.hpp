@@ -82,7 +82,8 @@ namespace DirectX
 			template <typename _Ty>
 			struct enable_hlsl_operator
 			{
-				// exlusive operators, such as float[3] + float[3], suggest to disable
+				// exlusive operators, such as unary operators (-)float[3] or
+				// binary operators float[3] + float[3], suggest to disable
 				static constexpr bool exclusive = false;
 				// inclusive operators, such as vector3f + float[3], suggest to enable
 				static constexpr bool inclusive = true;
@@ -247,19 +248,18 @@ namespace DirectX
 			// scalar + vector = vector
 			// scalar + scalar = scalar
 			// scalar -> vector
+			static constexpr size_t get_binary_operator_dimension(size_t a, size_t b)
+			{
+				return
+					a == b ? a :
+					a == 1 ? b :
+					b == 1 ? a :
+					0;
+			};
 
 			template <typename _left_type, typename _right_type>
 			struct binary_operator_traits
 			{
-				static constexpr size_t get_dimension(size_t a, size_t b)
-				{
-					return
-						a == b ? a :
-						a == 1 ? b :
-						b == 1 ? a :
-						0;
-				};
-
 				using lhs_t = std::remove_cv_t<std::remove_reference_t<_left_type>>;
 				using rhs_t = std::remove_cv_t<std::remove_reference_t<_right_type>>;
 
@@ -284,11 +284,11 @@ namespace DirectX
 					typename rhs_traits::scalar,
 					void>;
 
-				static constexpr size_t rows = get_dimension(lhs_traits::rows, rhs_traits::rows);
-				static constexpr size_t cols = get_dimension(lhs_traits::cols, rhs_traits::cols);
+				static constexpr size_t rows = get_binary_operator_dimension(lhs_traits::rows, rhs_traits::rows);
+				static constexpr size_t cols = get_binary_operator_dimension(lhs_traits::cols, rhs_traits::cols);
 				static constexpr size_t size = rows*cols;
 
-				static constexpr bool is_valiad_type = scalar_traits<scalar_type>::value && !std::is_void<type>::value;
+				static constexpr bool is_valiad_type = (size > 0) && scalar_traits<scalar_type>::value && !std::is_void<scalar_type>::value;
 
 				using return_type = get_xm_type<scalar_type, rows, cols>;
 				using type = return_type;
@@ -327,10 +327,7 @@ namespace DirectX
 				using traits = vector_traits<_Ty>;
 				static constexpr size_t size = traits::cols * traits::rows;
 
-				using type = std::conditional_t< traits::rows == 1,
-					xmvector<typename traits::scalar, traits::cols>,
-					xmmatrix<typename traits::scalar, traits::rows, traits::cols>
-				>;
+				using type = typename get_xm_type<typename traits::scalar, traits::rows, traits::cols>;
 			};
 
 			template <typename _Ty>
@@ -341,7 +338,7 @@ namespace DirectX
 				using traits = vector_traits<_Ty>;
 				using scalar_type = typename traits::scalar;
 				static constexpr size_t size = traits::cols * traits::rows;
-				static constexpr bool valiad = size > 0;
+				static constexpr bool valiad = size > 0 && enable_hlsl_operator<_Ty>::exclusive;
 				static constexpr bool overload = valiad;
 				using vector_type = get_xm_type<typename traits::scalar, traits::rows, traits::cols>;
 				using return_type = conditional_t<scalar_traits<_Ty>::value, _Ty, get_xm_type<typename traits::scalar, traits::rows, traits::cols>>;

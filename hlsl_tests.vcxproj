@@ -259,7 +259,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hlslm\cwiseoperators.hpp" />
     <ClInclude Include="hlslm\detail\mpl.hpp" />
     <ClInclude Include="hlslm\detail\old_stuff.h" />
     <ClInclude Include="hlslm\detail\swizzles_def_2.h" />
@@ -273,23 +272,9 @@
     <ClInclude Include="hlslm\traits.hpp" />
     <ClInclude Include="hlslm\xmconstants.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
-    <ClInclude Include="hlslm\xmquaternion.hpp" />
-    <ClInclude Include="hlslm\xmselector.hpp" />
     <ClInclude Include="hlslm\xmswizzler.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
     <ClInclude Include="hlslm\xmoperators.hpp" />
-    <ClInclude Include="hlsl\array_traits.hpp" />
-    <ClInclude Include="hlsl\float_xvector.hpp" />
-    <ClInclude Include="hlsl\float_math.hpp" />
-    <ClInclude Include="hlsl\hlsl.hpp" />
-    <ClInclude Include="hlsl\math.hpp" />
-    <ClInclude Include="hlsl\matrix.hpp" />
-    <ClInclude Include="hlsl\vector_operators.hpp" />
-    <ClInclude Include="hlsl\traits.hpp" />
-    <ClInclude Include="hlsl\vector.hpp" />
-    <ClInclude Include="hlsl\load_store.hpp" />
-    <ClInclude Include="hlsl\xm_traits.hpp" />
-    <ClInclude Include="hlsl\xvector_operators.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="hlslm\detail\xmvector_impl.inl" />
