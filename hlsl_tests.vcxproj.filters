@@ -107,6 +107,15 @@
     <ClInclude Include="hlslm\storage_classes.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
+    <ClInclude Include="hlslm\cwiseoperators.hpp">
+      <Filter>hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmquaternion.hpp">
+      <Filter>hlsl</Filter>
+    </ClInclude>
+    <ClInclude Include="hlslm\xmselector.hpp">
+      <Filter>hlsl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Release\algorithms_generation_checks.asm">

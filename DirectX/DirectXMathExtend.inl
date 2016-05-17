@@ -5,6 +5,15 @@
 
 namespace DirectX
 {
+	inline XMVECTOR	XM_CALLCONV	XMVectorCastFloatToInt(FXMVECTOR V)
+	{
+		return _mm_castsi128_ps(_mm_cvttps_epi32(V));
+	}
+	inline XMVECTOR	XM_CALLCONV	XMVectorCastIntToFloat(FXMVECTOR V)
+	{
+		return _mm_cvtepi32_ps(_mm_castps_si128(V));
+	}
+
 	inline XMVECTOR XM_CALLCONV XMVectorAddInt(FXMVECTOR V1, FXMVECTOR V2)
 	{
 #if defined(_XM_NO_INTRINSICS_)
@@ -49,7 +58,7 @@ namespace DirectX
 		Result.vector4_u32[3] = V1.vector4_u32[3] * V2.vector4_u32[3];
 		return Result;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-		return vmulq_u32(V1, V2);
+		return vmul_u32(V1, V2);
 #elif defined(_XM_SSE_INTRINSICS_) // Credit: Eigen 3.3.1
 #ifdef __SSE4__
 		return _mm_castsi128_ps(_mm_mullo_epi32(_mm_castps_si128(V1), _mm_castps_si128(V2)));
@@ -308,21 +317,25 @@ namespace DirectX
 	{
 		Type = Geometry_AxisAlignedBox;
 		AxisAlignedBox = rhs;
+		return *this;
 	}
 	inline BoundingGeometry& BoundingGeometry::operator=(const BoundingOrientedBox& rhs)
 	{
 		Type = Geometry_OrientedBox;
 		OrientedBox = rhs;
+		return *this;
 	}
 	inline BoundingGeometry& BoundingGeometry::operator=(const BoundingFrustum& rhs)
 	{
 		Type = Geometry_Frustum;
 		Frustum = rhs;
+		return *this;
 	}
 	inline BoundingGeometry& BoundingGeometry::operator=(const BoundingSphere& rhs)
 	{
 		Type = Geometry_Sphere;
 		Sphere = rhs;
+		return *this;
 	}
 
 	inline BoundingGeometry::BoundingGeometry()

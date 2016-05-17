@@ -12,19 +12,37 @@ namespace DirectX
 	struct XMFLOAT4A;
 
 	namespace hlsl
-    {
+	{
 		//using std::size_t;
 		using index_t = size_t;
 		using uint = uint32_t;
 		using std::enable_if_t;
-		
+
 		template <typename _T>
 		struct xmscalar;
+
+		template <typename _T>
+		struct xmcomplex;
+
+		template <typename _T>
+		struct xmquaternion;
 
 		template <typename _T, size_t _Size>
 		struct xmvector;
 
-		template <typename _T, size_t _Rows, size_t _Cols>
+		enum MatrixMajorEnum
+		{
+			RowMajor = 0,
+			ColumnMajor = 1,
+		};
+
+#if(_HLSLM_MATRIX_DEFAULT_COLUMN_MAJOR)
+		static constexpr MatrixMajorEnum DefaultMajor = ColumnMajor;
+#else
+		static constexpr MatrixMajorEnum DefaultMajor = RowMajor;
+#endif
+
+		template <typename _T, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = DefaultMajor>
 		struct xmmatrix;
 
 		// All wrappers must contains two methods : eval() and assign(Ty)
@@ -46,9 +64,19 @@ namespace DirectX
 			struct vector_traits
 			{
 				//static_assert(false,"type not support, please add cutomized vector_traits specialization.");
-				static constexpr size_t rows = 0;
+				static constexpr int rows = 0;
 				static constexpr int cols = 0;
 				using scalar = void;
+			};
+
+			// is the lhs_t and rhs_t are *identical* matrix expression
+			template <typename lhs_t, typename rhs_t>
+			struct is_assignable
+			{
+				using lhs_traits = vector_traits<lhs_t>;
+				using rhs_traits = vector_traits<rhs_t>;
+				static _CONST_DATA bool value = std::is_same<typename lhs_traits::scalar, typename rhs_traits::scalar>::value
+					&& lhs_traits::rows == rhs_traits::rows && lhs_traits::cols == lhs_traits::cols;
 			};
 
 			template <typename _Ty>
@@ -61,7 +89,9 @@ namespace DirectX
 			};
 
 			template <typename _Ty>
-			struct scalar_traits : public std::false_type {};
+			struct scalar_traits : public std::false_type {
+				using type = void;
+			};
 
 			template <typename _Ty>
 			struct is_expression : public std::false_type {};
@@ -80,6 +110,20 @@ namespace DirectX
 				static constexpr bool inclusive = true;
 			};
 
+			template <typename _Ty>
+			struct enable_hlsl_operator<xmcomplex<_Ty>>
+			{
+				static constexpr bool exclusive = true;
+				static constexpr bool inclusive = true;
+			};
+
+			template <typename _Ty>
+			struct enable_hlsl_operator<xmquaternion<_Ty>>
+			{
+				static constexpr bool exclusive = true;
+				static constexpr bool inclusive = true;
+			};
+
 			template <typename _Ty, index_t... _SwzIdx>
 			struct enable_hlsl_operator<xmswizzler<_Ty, _SwzIdx...>>
 			{
@@ -90,7 +134,7 @@ namespace DirectX
 			template <typename _Ty, size_t _Size>
 			struct vector_traits< xmvector<_Ty, _Size >>
 			{
-				static constexpr size_t rows = 1;
+				static constexpr int rows = 1;
 				static constexpr int cols = _Size;
 				using scalar = _Ty;
 			};
@@ -98,24 +142,49 @@ namespace DirectX
 			template <typename _Ty>
 			struct vector_traits<xmscalar<_Ty>>
 			{
-				static constexpr size_t rows = 1;
+				static constexpr int rows = 1;
 				static constexpr int cols = 1;
+				using scalar = _Ty;
+			};
+
+			template <typename _Ty>
+			struct vector_traits<xmquaternion<_Ty>>
+			{
+				static constexpr int rows = 1;
+				static constexpr int cols = 4;
+				using scalar = _Ty;
+			};
+
+			template <typename _Ty>
+			struct vector_traits<xmcomplex<_Ty>>
+			{
+				static constexpr int rows = 1;
+				static constexpr int cols = 2;
 				using scalar = _Ty;
 			};
 
 			template <typename _Ty, index_t... _SwzIdx>
 			struct vector_traits<xmswizzler<_Ty, _SwzIdx...>>
 			{
-				static constexpr size_t rows = 1;
+				static constexpr int rows = 1;
 				static constexpr int cols = sizeof...(_SwzIdx);
 				using scalar = _Ty;
 			};
 
 			template <typename _Ty>
-			struct is_xmvector : std::false_type {};
+			struct is_xmvector : public std::false_type {};
+
+			template <typename _Ty, size_t _Size>
+			struct is_xmvector<xmvector<_Ty, _Size>> : std::true_type {};
 
 			template <typename _Ty>
-			struct is_xmvector<xmscalar<_Ty>> : std::true_type {};
+			struct is_xmvector<xmscalar<_Ty>> : public std::true_type {};
+
+			template <typename _Ty>
+			struct is_xmvector<xmquaternion<_Ty>> : public std::true_type {};
+
+			template <typename _Ty>
+			struct is_xmvector<xmcomplex<_Ty>> : public std::true_type {};
 
 			template <typename _Ty, index_t... _SwzIdx>
 			struct is_expression<xmswizzler<_Ty, _SwzIdx...>> : public std::true_type {};
@@ -125,21 +194,6 @@ namespace DirectX
 
 			template <typename _Ty, size_t _StRows, size_t _StCols, size_t _Rows, size_t _Cols>
 			struct is_expression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
-
-			//template <typename _Ty>
-			//struct is_xmvector<xmswizzler<_Ty, 0>> : std::true_type {};
-
-			//template <typename _Ty>
-			//struct is_xmvector<xmswizzler<_Ty, 0, 1>> : std::true_type {};
-
-			//template <typename _Ty>
-			//struct is_xmvector<xmswizzler<_Ty, 0, 1, 2>> : std::true_type {};
-
-			//template <typename _Ty>
-			//struct is_xmvector<xmswizzler<_Ty, 0, 1, 2, 3>> : std::true_type {};
-
-			template <typename _Ty, size_t _Size>
-			struct is_xmvector<xmvector<_Ty, _Size>> : std::true_type {};
 
 			template <>
 			struct scalar_traits<uint> : public std::true_type {
@@ -156,6 +210,25 @@ namespace DirectX
 				using type = float;
 			};
 
+			template <>
+			struct scalar_traits<double> : public std::true_type {
+				using type = double;
+			};
+
+			template <typename _Ty>
+			struct scalar_traits<xmscalar<_Ty>> : public scalar_traits<_Ty> {
+			};
+
+			template <typename _Ty>
+			struct scalar_traits<xmcomplex<_Ty>> : public scalar_traits<_Ty> {
+				using type = std::conditional_t<value, xmcomplex<_Ty>, void>;
+			};
+
+			template <typename _Ty>
+			struct scalar_traits<xmquaternion<_Ty>> : public std::true_type {
+				using type = std::conditional_t<value, xmquaternion<_Ty>, void>;
+			};
+
 			template <typename _Ty>
 			struct is_aligned
 			{
@@ -169,9 +242,13 @@ namespace DirectX
 				conditional_t < rows*cols == 0, void,
 				conditional_t < rows*cols == 1, xmscalar<scalar_type>,
 				conditional_t < rows == 1, xmvector<scalar_type, cols>,
-				xmmatrix < scalar_type, rows, cols >> >> ;
+				xmmatrix<scalar_type, rows, cols >>>>;
 
-			template <typename lhs_t, typename rhs_t>
+			// scalar + vector = vector
+			// scalar + scalar = scalar
+			// scalar -> vector
+
+			template <typename _left_type, typename _right_type>
 			struct binary_operator_traits
 			{
 				static constexpr size_t get_dimension(size_t a, size_t b)
@@ -182,6 +259,9 @@ namespace DirectX
 						b == 1 ? a :
 						0;
 				};
+
+				using lhs_t = std::remove_cv_t<std::remove_reference_t<_left_type>>;
+				using rhs_t = std::remove_cv_t<std::remove_reference_t<_right_type>>;
 
 				using lop = enable_hlsl_operator<lhs_t>;
 				using rop = enable_hlsl_operator<rhs_t>;
@@ -195,6 +275,10 @@ namespace DirectX
 				static constexpr bool left_v = is_xmvector<lhs_t>::value;
 				static constexpr bool right_v = is_xmvector<rhs_t>::value;
 
+				// test if left/right operand are elementary 'non-C-scalar' types such as complex and quaternion
+				static constexpr bool left_e = scalar_traits<lhs_t>::value && (lhs_traits::cols * lhs_traits::rows > 1);
+				static constexpr bool right_e = scalar_traits<rhs_t>::value && (rhs_traits::cols * rhs_traits::rows > 1);
+
 				using scalar_type = std::conditional_t<
 					std::is_same<typename lhs_traits::scalar, typename rhs_traits::scalar>::value,
 					typename rhs_traits::scalar,
@@ -204,14 +288,13 @@ namespace DirectX
 				static constexpr size_t cols = get_dimension(lhs_traits::cols, rhs_traits::cols);
 				static constexpr size_t size = rows*cols;
 
+				static constexpr bool is_valiad_type = scalar_traits<scalar_type>::value && !std::is_void<type>::value;
+
 				using return_type = get_xm_type<scalar_type, rows, cols>;
 				using type = return_type;
 
-				static constexpr bool is_valiad_type = !std::is_same<type, void>::value && scalar_traits<scalar_type>::value;
-
 				static constexpr bool overload = is_valiad_type && (lop::exclusive || rop::exclusive) && lop::inclusive && rop::inclusive;
 				static constexpr bool overload_assign = is_valiad_type && lop::exclusive && rop::inclusive;
-
 			};
 
 			template <typename lhs_t, typename rhs_t>
@@ -254,10 +337,14 @@ namespace DirectX
 			struct unary_operator_traits : public vector_traits<_Ty>
 			{
 				using void_type = void;
-				using memery_type = _Ty;
+				using operand_type = _Ty;
 				using traits = vector_traits<_Ty>;
-
-				using type = get_xm_type<typename traits::scalar, traits::rows, traits::cols>;
+				using scalar_type = typename traits::scalar;
+				static constexpr size_t size = traits::cols * traits::rows;
+				static constexpr bool valiad = size > 0;
+				static constexpr bool overload = valiad;
+				using vector_type = get_xm_type<typename traits::scalar, traits::rows, traits::cols>;
+				using return_type = conditional_t<scalar_traits<_Ty>::value, _Ty, get_xm_type<typename traits::scalar, traits::rows, traits::cols>>;
 			};
 
 			template <typename _Ty>
@@ -268,5 +355,5 @@ namespace DirectX
 			template <typename _Ty>
 			using enable_memery_traits_t = typename enable_memery_traits<_Ty>::type;
 		}
-}
+	}
 }

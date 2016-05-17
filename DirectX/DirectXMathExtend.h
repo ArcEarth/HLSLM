@@ -7,6 +7,11 @@
 #error Bullet physics can not be include before DirectX Math headers.
 #endif
 
+// Prevent Windows header's macro pollution
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+
 // Disable bullet to overload operators on _m128
 #ifndef BT_NO_SIMD_OPERATOR_OVERLOADS
 #define BT_NO_SIMD_OPERATOR_OVERLOADS
@@ -22,7 +27,15 @@
 #endif
 
 #ifndef XM_ALIGNATTR
-#define XM_ALIGNATTR _MM_ALIGN16
+#ifdef _XM_NO_INTRINSICS_
+#define XM_ALIGNATTR
+#else
+#ifdef _MSC_VER
+#define XM_ALIGNATTR __declspec(align(16))
+#else
+#define XM_ALIGNATTR alignas(16)
+#endif
+#endif
 #endif
 namespace DirectX
 {
@@ -53,6 +66,9 @@ namespace DirectX
 		return M;
 	}
 
+	// Using trucate algorithm to cast float to int, compenent-wise c-style cast from float to int. vi = (int) vf
+	inline XMVECTOR	XM_CALLCONV	XMVectorCastFloatToInt(FXMVECTOR V);
+	inline XMVECTOR	XM_CALLCONV	XMVectorCastIntToFloat(FXMVECTOR V);
 	XMVECTOR    XM_CALLCONV     XMVectorAddInt(FXMVECTOR V1, FXMVECTOR V2);
 	XMVECTOR    XM_CALLCONV     XMVectorSubtractInt(FXMVECTOR V1, FXMVECTOR V2);
 	XMVECTOR    XM_CALLCONV     XMVectorMultiplyInt(FXMVECTOR V1, FXMVECTOR V2);
@@ -102,9 +118,10 @@ namespace DirectX
 		return Result;
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-		//static_assert(false, "ARM Instrinsics not available yet");
-		float32x2_t v1 = vget_low_f32(V);
-		float32x2_t v2 = vget_high_f32(V);
+		static_assert(false, "ARM Instrinsics not available yet");
+		float32x4_t vTemp = vmulq_f32(V1, V2);
+		float32x2_t v1 = vget_low_f32(vTemp);
+		float32x2_t v2 = vget_high_f32(vTemp);
 		v1 = vpadd_f32(v1, v1);
 		v2 = vpadd_f32(v2, v2);
 		v1 = vadd_f32(v1, v2);
@@ -415,14 +432,14 @@ namespace DirectX
 
 	// First XMDUALVECTOR
 #if ( defined(_M_IX86) || defined(_M_ARM) || defined(_XM_VMX128_INTRINSICS_) || _XM_VECTORCALL_ ) && !defined(_XM_NO_INTRINSICS_)
-	typedef const XMDUALVECTOR& FXMDUALVECTOR;
+	typedef const XMDUALVECTOR FXMDUALVECTOR;
 #else
 	typedef const XMDUALVECTOR& FXMDUALVECTOR;
 #endif
 
 	// 2nd
 #if ( defined(_M_ARM) || defined(_XM_VMX128_INTRINSICS_) || (_XM_VECTORCALL_)) && !defined(_XM_NO_INTRINSICS_)
-	typedef const XMDUALVECTOR& GXMDUALVECTOR;
+	typedef const XMDUALVECTOR GXMDUALVECTOR;
 #else
 	typedef const XMDUALVECTOR& GXMDUALVECTOR;
 #endif
@@ -474,7 +491,7 @@ namespace DirectX
 			r[1] = XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray + 4));
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator= (CXMDUALVECTOR DV) { r[0] = DV.r[0]; r[1] = DV.r[1]; return *this; }
+		XMDUALVECTOR& XM_CALLCONV operator= (FXMDUALVECTOR DV) { r[0] = DV.r[0]; r[1] = DV.r[1]; return *this; }
 
 		XMDUALVECTOR XM_CALLCONV operator+ () const { return *this; }
 		XMDUALVECTOR XM_CALLCONV operator- () const
@@ -494,14 +511,14 @@ namespace DirectX
 			return r[row];
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator+= (GXMDUALVECTOR M)
+		XMDUALVECTOR& XM_CALLCONV operator+= (FXMDUALVECTOR M)
 		{
 			r[0] += M.r[0];
 			r[1] += M.r[1];
 			return *this;
 		}
 
-		XMDUALVECTOR& XM_CALLCONV operator-= (GXMDUALVECTOR M)
+		XMDUALVECTOR& XM_CALLCONV operator-= (FXMDUALVECTOR M)
 		{
 			r[0] -= M.r[0];
 			r[1] -= M.r[1];
@@ -622,8 +639,8 @@ namespace DirectX
 		XMVECTOR localQ1 = _mm_xor_ps(sign, q1);
 #else
 		uint32x4_t sign = vandq_u32(signMask, x);
-		x = veorq_u32(sign, x);
-		XMVECTOR localQ1 = veorq_u32(sign, q1);
+		x = veor_u32(sign, x);
+		XMVECTOR localQ1 = veor_u32(sign, q1);
 #endif
 		XMVECTOR xm1 = XMVectorSubtract(x, one);
 		XMVECTOR splatD = XMVectorSubtract(one, splatT);
@@ -636,12 +653,11 @@ namespace DirectX
 	}
 
 	// Caculate the rotation quaternion base on v1 and v2 (shortest rotation geo-distance in sphere surface)
-	inline XMVECTOR XM_CALLCONV XMQuaternionRotationVectorToVector(FXMVECTOR v1, FXMVECTOR v2) {
+	inline XMVECTOR XM_CALLCONV XMQuaternionRotationVectorToVector(FXMVECTOR v1, FXMVECTOR v2, FXMVECTOR epsilon = g_XMEpsilon) {
 		assert(!XMVector3Equal(v1, XMVectorZero()));
 		assert(!XMVector3Equal(v2, XMVectorZero()));
 		XMVECTOR n1 = XMVector3Normalize(v1);
 		XMVECTOR n2 = XMVector3Normalize(v2);
-		XMVECTOR epsilon = g_XMEpsilon.v;
 
 		if (XMVector4NearEqual(n1, n2, epsilon))
 		{

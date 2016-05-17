@@ -190,7 +190,7 @@ namespace DirectX
 		{
 #if defined(__SSE4__)
 			return _mm_blendv_ps(V2, V1, Control);
-#else // Fall-back to orginal code pass
+#else // Fall-back to original code pass
 			return XM_NAMES XMVectorSelect(V1, V2, Control);
 #endif
 		}
@@ -199,7 +199,7 @@ namespace DirectX
 		inline XMVECTOR XM_CALLCONV XMVectorSelect(FXMVECTOR V1, FXMVECTOR V2)
 		{
 #if defined(__SSE4__)			
-			return _mm_blend_ps(V1, V2, WhichX | (WhichY << 1) | (WhichZ << 2) | (WhichW << 3);
+			return _mm_blend_ps(V1, V2, WhichX | (WhichY << 1) | (WhichZ << 2) | (WhichW << 3));
 #else
 			static const XMVECTORU32 selectMask =
 			{
@@ -214,7 +214,7 @@ namespace DirectX
 
 		template<> inline XMVECTOR XM_CALLCONV XMVectorSelect<0, 0, 0, 0>(FXMVECTOR V1, FXMVECTOR V2) { (V2); return V1; }
 		template<> inline XMVECTOR XM_CALLCONV XMVectorSelect<1, 1, 1, 1>(FXMVECTOR V1, FXMVECTOR V2) { (V1); return V2; }
-		// sinple intrinsic XMVector Select Rotinue _mm_blend_ps
+		// single intrinsic XMVector Select Retinue _mm_blend_ps
 /*
 #if defined(__SSE4__)
 		template<> inline XMVECTOR XM_CALLCONV XMVectorSelect<1, 0, 0, 0>(FXMVECTOR V1, FXMVECTOR V2) { return _mm_blend_ps(V1, V2, 0x1); }

@@ -45,7 +45,7 @@ namespace DirectX
 		// 1) A struct does not have any inherience, and only contains __mm128(i/d) field
 		// 2) A struct inherit from only "vector struct" types, and only contains __mm128(i/d) field
 		template <typename _T, size_t _Size>
-		struct XM_ALIGNATTR xmvector : public detail::logical_bitwise_operator_base<xmvector<_T, _Size>,_T,_Size>
+		struct XM_ALIGNATTR XM_EMPTY_BASE xmvector : public detail::logical_bitwise_operator_base<xmvector<_T, _Size>,_T,_Size>
 		{
 			//using components_name_enums = detail::components_name_enums;
 			using this_type = xmvector<_T, _Size>;
@@ -102,8 +102,15 @@ namespace DirectX
 			}
 
 			template <int _NewSize>
-			inline explicit operator xmvector<Scalar, _NewSize>() const {
+			inline explicit operator const xmvector<Scalar, _NewSize>&() const {
 				return as<Scalar, _NewSize>();
+			}
+
+			template <typename _NewType>
+			inline xmvector<_NewType, _Size> XM_CALLCONV cast() const
+			{
+				xmvector<_NewType, _Size> result;
+				result.v = detail::cast_vector<Scalar, _NewType, _Size>(this->v);
 			}
 
 			template <index_t... selectors>
@@ -206,7 +213,7 @@ namespace DirectX
 		};
 
 		template <typename _T>
-		struct XM_ALIGNATTR xmscalar : public xmvector<_T, 1>
+		struct XM_ALIGNATTR XM_EMPTY_BASE xmscalar : public xmvector<_T, 1>
 		{
 			using base_type = xmvector<_T, 1>;
 			using this_type = xmscalar<_T>;
@@ -233,6 +240,10 @@ namespace DirectX
 			inline xmscalar& operator=(Scalar s) {
 				this->v = detail::replicate_scalar(s);
 				return *this;
+			}
+
+			inline operator Scalar () const {
+				return this->get<0>();
 			}
 
 			template <size_t _Size>
@@ -323,16 +334,16 @@ namespace DirectX
 		{
 			template <uint32_t Elem>
 			// broadcast an element to all dimension, like xyzw -> xxxx
-			XMVECTOR splat(FXMVECTOR xmv);
+			inline XMVECTOR splat(FXMVECTOR xmv);
 
 			template <>
-			XMVECTOR splat<0>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatX(xmv); }
+			inline XMVECTOR splat<0>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatX(xmv); }
 			template <>
-			XMVECTOR splat<1>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatY(xmv); }
+			inline XMVECTOR splat<1>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatY(xmv); }
 			template <>
-			XMVECTOR splat<2>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatZ(xmv); }
+			inline XMVECTOR splat<2>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatZ(xmv); }
 			template <>
-			XMVECTOR splat<3>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatW(xmv); }
+			inline XMVECTOR splat<3>(FXMVECTOR xmv) { return _DXMEXT XMVectorSplatW(xmv); }
 
 
 			template <> inline float XM_CALLCONV get<float, _x>(FXMVECTOR xmv) { return _DXMEXT XMVectorGetX(xmv); }
@@ -472,6 +483,44 @@ namespace DirectX
 		using xmvector3i = xmvector<uint, 3>;
 		using xmvector4i = xmvector<uint, 4>;
 	}
+
+	// Extend methods for XMLoad / XMStore
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector1f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector1f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector2f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector2f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector3f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector3f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector4f& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector4f& src){ return src.v; }
+
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector1i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector1i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector2i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector2i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector3i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector3i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoad(const hlsl::xmvector4i& src){ return src.v; }
+	inline XMVECTOR XM_CALLCONV XMLoadA(const hlsl::xmvector4i& src){ return src.v; }
+
+	inline void XM_CALLCONV XMStore(hlsl::xmvector1f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector1f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector2f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector2f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector3f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector3f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector4f& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector4f& dest, FXMVECTOR v) { dest.v = v; }
+
+	inline void XM_CALLCONV XMStore(hlsl::xmvector1i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector1i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector2i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector2i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector3i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector3i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStore(hlsl::xmvector4i& dest, FXMVECTOR v) { dest.v = v; }
+	inline void XM_CALLCONV XMStoreA(hlsl::xmvector4i& dest, FXMVECTOR v) { dest.v = v; }
+
 }
 
 #endif
