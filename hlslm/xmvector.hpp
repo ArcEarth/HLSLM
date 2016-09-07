@@ -187,7 +187,7 @@ namespace DirectX
 			inline enable_if_loadable<_Ty> operator=(const _Ty& memory_vector)
 			{
 				using traits = traits::memery_vector_traits<_Ty>;
-				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, Size>;
+				using load_imple = detail::storage_helper<typename traits::scalar, ::hlsl::traits::is_aligned<_Ty>::value, Size>;
 				this->v = load_imple::load(reinterpret_cast<const typename traits::scalar*>(&memory_vector));
 			}
 
@@ -200,7 +200,7 @@ namespace DirectX
 			inline typename traits::enable_memery_traits_t<_Ty>::void_type XM_CALLCONV store(_Ty& storage) const
 			{
 				using traits = traits::memery_vector_traits<_Ty>;
-				using load_imple = detail::storage_helper<typename traits::scalar, is_aligned<_Ty>::value, traits::cols, traits::rows>;
+				using load_imple = detail::storage_helper<typename traits::scalar, ::hlsl::traits::is_aligned<_Ty>::value, traits::cols, traits::rows>;
 				load_imple::store(reinterpret_cast<typename traits::scalar*>(&storage), this->v);
 			}
 

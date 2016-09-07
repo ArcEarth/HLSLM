@@ -5,13 +5,9 @@
     <ClCompile Include="unit_tests.cpp" />
     <ClCompile Include="operators_generation_checks.cpp" />
     <ClCompile Include="algorithms_generation_checks.cpp" />
-    <ClCompile Include="traits_static_asserts.cpp" />
     <ClCompile Include="swizzle_generator.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Asm">
-      <UniqueIdentifier>{f66e43c1-950f-4cc6-af51-7f56b70a4070}</UniqueIdentifier>
-    </Filter>
     <Filter Include="hlslm">
       <UniqueIdentifier>{ef3f062e-c2a4-44a7-8e51-11826d3687eb}</UniqueIdentifier>
     </Filter>
@@ -70,12 +66,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Release\algorithms_generation_checks.asm">
-      <Filter>Asm</Filter>
-    </None>
-    <None Include="Release\operators_generation_checks.asm">
-      <Filter>Asm</Filter>
-    </None>
     <None Include="hlslm\detail\xmvector_impl.inl">
       <Filter>hlslm\details</Filter>
     </None>

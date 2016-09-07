@@ -75,7 +75,7 @@ namespace DirectX
 			{
 				using lhs_traits = vector_traits<lhs_t>;
 				using rhs_traits = vector_traits<rhs_t>;
-				static _CONST_DATA bool value = std::is_same<typename lhs_traits::scalar, typename rhs_traits::scalar>::value
+				static const bool value = std::is_same<typename lhs_traits::scalar, typename rhs_traits::scalar>::value
 					&& lhs_traits::rows == rhs_traits::rows && lhs_traits::cols == lhs_traits::cols;
 			};
 
@@ -233,7 +233,8 @@ namespace DirectX
 			template <typename _Ty>
 			struct is_aligned
 			{
-				static constexpr bool value = (alignof(_Ty) >= alignof(XMVECTOR) && (alignof(_Ty) % alignof(XMVECTOR) == 0));
+				static constexpr size_t align = alignof(std::remove_cv_t<_Ty>);
+				static constexpr bool value = (align >= alignof(XMVECTOR)) && (alignof(_Ty) % alignof(XMVECTOR) == 0);
 			};
 
 			using std::conditional_t;

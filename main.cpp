@@ -220,7 +220,7 @@ void OperatorTest()
 
 	cout << v3;
 
-	uint iarray[4];
+	uint iarray[4] = {1,2,3,4};
 	vi4 /= vi4;
 	vi4 = xor(vi4, vi4.wzyx());
 
@@ -280,14 +280,19 @@ int __cdecl main( int argc, char *argv[] )
 {
 	DirectX::XMFLOAT4A f4, f3;
 	xmvector4f xmv;
-	xmvector4f ret0,ret1;
+	xmvector4f ret0, ret1;
 	xmv.v = { 100.f,200.f,300.f,400.f };
 
 	ret0 = SetX_HL(xmv, 5.0f);
 	OperatorTest();
 
 	system("PAUSE");
-	//ret0.store(f4);
+
+	xm(f4) = ret0;
+	ret0 = f4;
+	//store(f4, ret0);
+
+	ret0.store(f4);
 
 	//std::cout << f4.x << ',' << f4.y << ',' << f4.z << ',' << f4.w << std::endl;
 
