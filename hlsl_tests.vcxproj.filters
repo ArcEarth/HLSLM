@@ -64,13 +64,13 @@
     <ClInclude Include="hlslm\storage_classes.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
+    <ClInclude Include="hlslm\xmquaternion.hpp">
+      <Filter>hlslm</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="hlslm\detail\xmvector_impl.inl">
       <Filter>hlslm\details</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="operators_generation_checks.txt" />
   </ItemGroup>
 </Project>

@@ -264,15 +264,13 @@
     <ClInclude Include="hlslm\traits.hpp" />
     <ClInclude Include="hlslm\xmconstants.hpp" />
     <ClInclude Include="hlslm\xmmatrix.hpp" />
+    <ClInclude Include="hlslm\xmquaternion.hpp" />
     <ClInclude Include="hlslm\xmswizzler.hpp" />
     <ClInclude Include="hlslm\xmvector.hpp" />
     <ClInclude Include="hlslm\xmoperators.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="hlslm\detail\xmvector_impl.inl" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="operators_generation_checks.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

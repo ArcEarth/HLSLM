@@ -50,6 +50,14 @@ namespace hlsl
 		load_imple::store(reinterpret_cast<typename traits::scalar*>(&memory_vector),v.v);
 	}
 
+	// store stream operator <<
+	template <typename _Ty>
+	inline _Ty& XM_CALLCONV operator<<(_Ty& memory_vector, const traits::if_memory_vector_type<_Ty> v)
+	{
+		store<_Ty>(memory_vector, v);
+		return memory_vector;
+	}
+
 	template <typename _Ty>
 	inline void XM_CALLCONV store_a(_Ty& memory_vector, const traits::if_memory_vector_type<_Ty> v)
 	{
@@ -94,6 +102,7 @@ namespace hlsl
 	memery_vector_wrapper<_Ty>& xm(const _Ty& memory_vector) {
 		return reinterpret_cast<const memery_vector_wrapper<_Ty>&>(memory_vector);
 	}
+
 
 
 	template <typename _Scalar>

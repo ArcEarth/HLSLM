@@ -278,18 +278,28 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 
 int __cdecl main( int argc, char *argv[] )
 {
-	DirectX::XMFLOAT4A f4, f3;
+	DirectX::XMFLOAT4A f4;
+	DirectX::XMFLOAT3A f3;
 	xmvector4f xmv;
 	xmvector4f ret0, ret1;
-	xmv.v = { 100.f,200.f,300.f,400.f };
 
+	xmvector3f v3;
+	v3 = { 1.0f, 2.0f, 3.0f };
+	v3 = { 1.0f, 2.0f, 3.0f, 0.0f };
+	xmv = { 100.f,200.f,300.f,400.f };
+
+	float il3[] = { 1.0f, 2.0f, 3.0f };
+	xmv.xyz() = v3 + il3;
 	ret0 = SetX_HL(xmv, 5.0f);
 	OperatorTest();
 
 	system("PAUSE");
 
-	xm(f4) = ret0;
+	f4 << ret0;
 	ret0 = f4;
+	// f3 << ret0; error no overload
+	f3 << ret0.xyz();
+	
 	//store(f4, ret0);
 
 	ret0.store(f4);
