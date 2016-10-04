@@ -232,6 +232,7 @@ void OperatorTest()
 	v2 = v2 + v2;
 	v2 = v2 + v0;
 	v2 = v2 + v4.xy();
+	v2 = v2 * 0.5f;
 	//v2 = v2 + scl; // error
 
 	v2 = v0 + load(scl);
@@ -266,7 +267,7 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 {
 	//using namespace std;
 	//cout << "v = " << v << endl;
-	v.xy() += v.zw();
+	v.yx() += v.zw();
 	//cout << "v.xy() += v.zw(); v ==" << v << endl;
 	v.yz() = v.yz() + v.yx();
 	//cout << "v.xy() = v.wz() + v.zw(); v ==" << v << endl;
@@ -295,6 +296,7 @@ int __cdecl main( int argc, char *argv[] )
 
 	system("PAUSE");
 
+	ret0 *= 2.0f;
 	f4 << ret0;
 	ret0 = f4;
 	// f3 << ret0; error no overload

@@ -166,6 +166,10 @@ namespace DirectX
 			{ this->v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
 			inline this_type& XM_CALLCONV operator /= (const this_type rhs)
 			{ this->v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v); return *this; }
+			inline this_type& XM_CALLCONV operator *= (const Scalar rhs)
+			{ *this *= this_type(rhs); return *this; }
+			inline this_type& XM_CALLCONV operator /= (const Scalar rhs)
+			{ *this /= this_type(rhs); return *this; }
 
 			inline this_type XM_CALLCONV operator + (const this_type rhs) const
 			{ this_type ret; ret.v = vector_math::add<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
@@ -175,7 +179,10 @@ namespace DirectX
 			{ this_type ret; ret.v = vector_math::multiply<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
 			inline this_type XM_CALLCONV operator / (const this_type rhs) const
 			{ this_type ret; ret.v = vector_math::divide<scalar_type, size>::invoke(this->v, rhs.v); return ret; }
-
+			inline this_type XM_CALLCONV operator * (const Scalar rhs) const
+			{ return (*this) * this_type(rhs); }
+			inline this_type XM_CALLCONV operator / (const Scalar rhs) const
+			{ return (*this) / this_type(rhs); }
 
 #if defined(_XM_VECTOR_USE_LOAD_STORE_HELPER_)
 
