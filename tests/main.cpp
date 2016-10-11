@@ -1,6 +1,6 @@
 //#include "hlsl/hlsl.hpp"
 
-#include "hlslm\hlsl.hpp"
+#include <hlslm\hlsl.hpp>
 //#include "hlslm\load_store.hpp"
 
 #include <iostream>
