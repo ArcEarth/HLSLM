@@ -209,7 +209,8 @@ void OperatorTest()
 	float		scl = 2.0f;
 	xmvector4i vi4(1);
 	xmfloat		xscl = 1.0f;
-
+	DirectX::XMFLOAT3 f3;
+	v3 = v3 * f3;
 
 
 	static constexpr bool is_over = traits::binary_operator_traits<xmvector2f, float>::overload;
@@ -224,7 +225,7 @@ void OperatorTest()
 	vi4 /= vi4;
 	vi4 = xor(vi4, vi4.wzyx());
 
-	vi4 = vi4 ^ vi4;
+	vi4 = vi4 ^ iarray;
 	vi4 = vi4 & vi4.yxwz();
 	vi4 ^= xmuint(5);
 	vi4.yxz() ^= v4.cast<uint>().zyx();

@@ -251,26 +251,26 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hlslm\detail\mpl.hpp" />
-    <ClInclude Include="hlslm\detail\old_stuff.h" />
-    <ClInclude Include="hlslm\detail\swizzles_def_2.h" />
-    <ClInclude Include="hlslm\detail\swizzles_def_3.h" />
-    <ClInclude Include="hlslm\detail\swizzles_def_4.h" />
-    <ClInclude Include="hlslm\detail\special_swizzle.h" />
-    <ClInclude Include="hlslm\detail\vector_math.h" />
-    <ClInclude Include="hlslm\hlsl.hpp" />
-    <ClInclude Include="hlslm\load_store.hpp" />
-    <ClInclude Include="hlslm\storage_classes.hpp" />
-    <ClInclude Include="hlslm\traits.hpp" />
-    <ClInclude Include="hlslm\xmconstants.hpp" />
-    <ClInclude Include="hlslm\xmmatrix.hpp" />
-    <ClInclude Include="hlslm\xmquaternion.hpp" />
-    <ClInclude Include="hlslm\xmswizzler.hpp" />
-    <ClInclude Include="hlslm\xmvector.hpp" />
-    <ClInclude Include="hlslm\xmoperators.hpp" />
+    <ClInclude Include="..\hlslm\detail\mpl.hpp" />
+    <ClInclude Include="..\hlslm\detail\old_stuff.h" />
+    <ClInclude Include="..\hlslm\detail\swizzles_def_2.h" />
+    <ClInclude Include="..\hlslm\detail\swizzles_def_3.h" />
+    <ClInclude Include="..\hlslm\detail\swizzles_def_4.h" />
+    <ClInclude Include="..\hlslm\detail\special_swizzle.h" />
+    <ClInclude Include="..\hlslm\detail\vector_math.h" />
+    <ClInclude Include="..\hlslm\hlsl.hpp" />
+    <ClInclude Include="..\hlslm\load_store.hpp" />
+    <ClInclude Include="..\hlslm\storage_classes.hpp" />
+    <ClInclude Include="..\hlslm\traits.hpp" />
+    <ClInclude Include="..\hlslm\xmconstants.hpp" />
+    <ClInclude Include="..\hlslm\xmmatrix.hpp" />
+    <ClInclude Include="..\hlslm\xmquaternion.hpp" />
+    <ClInclude Include="..\hlslm\xmswizzler.hpp" />
+    <ClInclude Include="..\hlslm\xmvector.hpp" />
+    <ClInclude Include="..\hlslm\xmoperators.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="hlslm\detail\xmvector_impl.inl" />
+    <None Include="..\hlslm\detail\xmvector_impl.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

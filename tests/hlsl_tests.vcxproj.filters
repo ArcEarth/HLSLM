@@ -11,66 +11,62 @@
     <Filter Include="hlslm">
       <UniqueIdentifier>{ef3f062e-c2a4-44a7-8e51-11826d3687eb}</UniqueIdentifier>
     </Filter>
-    <Filter Include="hlslm\details">
-      <UniqueIdentifier>{338e3637-ca30-46ba-aea6-1d78359d777a}</UniqueIdentifier>
+    <Filter Include="hlslm\detail">
+      <UniqueIdentifier>{b3e35e94-24b8-4e48-805d-0d6a437e2de3}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="hlslm\xmmatrix.hpp">
+    <ClInclude Include="..\hlslm\xmmatrix.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmvector.hpp">
+    <ClInclude Include="..\hlslm\xmvector.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\detail\mpl.hpp">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\detail\swizzles_def_2.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\detail\swizzles_def_3.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\detail\swizzles_def_4.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\hlsl.hpp">
+    <ClInclude Include="..\hlslm\hlsl.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\detail\special_swizzle.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\detail\old_stuff.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\xmoperators.hpp">
+    <ClInclude Include="..\hlslm\xmoperators.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmconstants.hpp">
+    <ClInclude Include="..\hlslm\xmconstants.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmswizzler.hpp">
+    <ClInclude Include="..\hlslm\xmswizzler.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\detail\vector_math.h">
-      <Filter>hlslm\details</Filter>
-    </ClInclude>
-    <ClInclude Include="hlslm\load_store.hpp">
+    <ClInclude Include="..\hlslm\load_store.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\traits.hpp">
+    <ClInclude Include="..\hlslm\traits.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\storage_classes.hpp">
+    <ClInclude Include="..\hlslm\storage_classes.hpp">
       <Filter>hlslm</Filter>
     </ClInclude>
-    <ClInclude Include="hlslm\xmquaternion.hpp">
+    <ClInclude Include="..\hlslm\xmquaternion.hpp">
       <Filter>hlslm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hlslm\detail\old_stuff.h" />
+    <ClInclude Include="..\hlslm\detail\special_swizzle.h" />
+    <ClInclude Include="..\hlslm\detail\swizzles_def_2.h">
+      <Filter>hlslm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hlslm\detail\swizzles_def_3.h">
+      <Filter>hlslm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hlslm\detail\swizzles_def_4.h">
+      <Filter>hlslm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hlslm\detail\mpl.hpp">
+      <Filter>hlslm\detail</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hlslm\detail\vector_math.h">
+      <Filter>hlslm\detail</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="hlslm\detail\xmvector_impl.inl">
-      <Filter>hlslm\details</Filter>
+    <None Include="..\hlslm\detail\xmvector_impl.inl">
+      <Filter>hlslm\detail</Filter>
     </None>
   </ItemGroup>
 </Project>
