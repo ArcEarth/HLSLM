@@ -243,7 +243,7 @@ namespace DirectX
 				this->v = detail::replicate_scalar(s);
 			}
 
-			inline xmscalar(base_type s){
+			inline xmscalar(const base_type& s){
 				this->v = detail::splat<0>(s.v);
 			}
 

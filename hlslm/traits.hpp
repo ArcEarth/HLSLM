@@ -45,15 +45,6 @@ namespace DirectX
 		template <typename _T, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = DefaultMajor>
 		struct xmmatrix;
 
-		// All wrappers must contains two methods : eval() and assign(Ty)
-		// wrapper for matrix transepoe
-		template <typename _T, size_t _SrcRows, size_t _SrcCols>
-		struct xmtranposer;
-
-		// wrapper for matrix block operation
-		template <typename _T, size_t _StRows, size_t StCols, size_t _Rows, size_t _Cols>
-		struct xmmatblock;
-
 		// wrapper for vector selection and swizzle
 		template <typename _T, index_t... _SwzArgs>
 		struct xmswizzler;
