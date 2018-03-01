@@ -94,35 +94,35 @@ namespace DirectX
 			{
 				inline xmvector<uint, _Size>& XM_CALLCONV operator&= (const xmvector<uint, _Size> rhs)
 				{
-					this->v = vector_math::and<uint, _Size>::invoke(this->v, rhs.v);
+					this->v = vector_math::_and<uint, _Size>::invoke(this->v, rhs.v);
 					return static_cast<xmvector<uint, _Size>&>(*this);
 				}
 				inline xmvector<uint, _Size>& XM_CALLCONV operator|= (const xmvector<uint, _Size> rhs)
 				{
-					this->v = vector_math:: or <uint, _Size>::invoke(this->v, rhs.v);
+					this->v = vector_math::_or <uint, _Size>::invoke(this->v, rhs.v);
 					return static_cast<xmvector<uint, _Size>&>(*this);
 				}
 				inline xmvector<uint, _Size>& XM_CALLCONV operator^= (const xmvector<uint, _Size> rhs)
 				{
-					this->v = vector_math::xor<uint, _Size>::invoke(this->v, rhs.v);
+					this->v = vector_math::_xor<uint, _Size>::invoke(this->v, rhs.v);
 					return static_cast<xmvector<uint, _Size>&>(*this);
 				}
 				inline xmvector<uint, _Size> XM_CALLCONV operator& (const xmvector<uint, _Size> rhs) const
 				{
 					xmvector<uint, _Size> ret;
-					ret.v = vector_math::and<uint, _Size>::invoke(this->v, rhs.v);
+					ret.v = vector_math::_and<uint, _Size>::invoke(this->v, rhs.v);
 					return ret;
 				}
 				inline xmvector<uint, _Size> XM_CALLCONV operator| (const xmvector<uint, _Size> rhs) const
 				{
 					xmvector<uint, _Size> ret;
-					ret.v = vector_math:: or <uint, _Size>::invoke(this->v, rhs.v);
+					ret.v = vector_math::_or<uint, _Size>::invoke(this->v, rhs.v);
 					return ret;
 				}
 				inline xmvector<uint, _Size> XM_CALLCONV operator^ (const xmvector<uint, _Size> rhs) const
 				{
 					xmvector<uint, _Size> ret;
-					ret.v = vector_math::xor<uint, _Size>::invoke(this->v, rhs.v);
+					ret.v = vector_math::_xor<uint, _Size>::invoke(this->v, rhs.v);
 					return ret;
 				}
 			};
@@ -152,15 +152,15 @@ namespace DirectX
 
 				template <index_t... _SrcSwz> inline void XM_CALLCONV operator&=(const xmswizzler<Scalar, _SrcSwz...>& src)
 				{
-					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::and, _SrcSwz...>(src);
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::_and, _SrcSwz...>(src);
 				}
 				template <index_t... _SrcSwz> inline void XM_CALLCONV operator|=(const xmswizzler<Scalar, _SrcSwz...>& src)
 				{
-					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math:: or , _SrcSwz...>(src);
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::_or , _SrcSwz...>(src);
 				}
 				template <index_t... _SrcSwz> inline void XM_CALLCONV operator^=(const xmswizzler<Scalar, _SrcSwz...>& src)
 				{
-					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::xor, _SrcSwz...>(src);
+					static_cast<Derived&>(*this).invoke_operator_assign<typename vector_math::_xor, _SrcSwz...>(src);
 				}
 
 				// identity to any assignment

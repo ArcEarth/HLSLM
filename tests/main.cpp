@@ -1,6 +1,7 @@
 //#include "hlsl/hlsl.hpp"
 
 #include <hlslm\hlsl.hpp>
+#include <hlslm\xmmatrix.hpp>
 //#include "hlslm\load_store.hpp"
 
 #include <iostream>
@@ -202,10 +203,13 @@ void OperatorTest()
 	foo<sqr>::excute(3);
 	foo<negate>::excute(3);
 
-	xmvector2f v2 = {.0f, 1.0f};
-	xmvector3f v3 = {-1.0f, -1.0f, -1.0f};
-	xmvector4f v4;
-	xmscalar<float> v0;
+	using namespace hlsl::alias;
+	xmfloat v0;
+	float2 v2 = { .0f, 1.0f };
+	float3 v3 = { -1.0f, -1.0f, -1.0f };
+	float4 v4;
+
+
 	float		scl = 2.0f;
 	xmvector4i vi4(1);
 	xmfloat		xscl = 1.0f;
@@ -223,7 +227,7 @@ void OperatorTest()
 
 	uint iarray[4] = {1,2,3,4};
 	vi4 /= vi4;
-	vi4 = xor(vi4, vi4.wzyx());
+	vi4 = _xor(vi4, vi4.wzyx());
 
 	vi4 = vi4 ^ iarray;
 	vi4 = vi4 & vi4.yxwz();
@@ -245,6 +249,7 @@ void OperatorTest()
 
 	//v2 = scl + v2; // error
 
+
 	v2 = v4.xy() + v2;
 	//v2 = v4.xy() + v3;// error
 	v2 = v4.xy() + v0;
@@ -262,6 +267,12 @@ void OperatorTest()
 	v0 += v0;
 	v0 += load(scl);
 	//v0 += v2; //error
+
+	using elem_t = hlsl::detail::blocked<xmmatrix<float, 4, 4>, 0, 0, 1, 1>::type;
+	using transtrans_t = hlsl::detail::transposed<typename hlsl::detail::blocked<typename hlsl::detail::transposed<xmmatrix<float, 4, 4>>::type, 0, 0, 1, 3>::type>::type;
+	xmmatrix4x4f mat;
+	auto& tr = mat.transpose();
+	auto& block = mat.block<2, 2, 2, 2>();
 }
 
 xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
@@ -278,12 +289,86 @@ xmvector4f XM_CALLCONV SetX_HL(xmvector4f v, float x)
 	//using sorted = typename sort_sequence<index_sequence<3*4+1, 1*4+2, 2*4+0, 0*4+3>>::type;
 }
 
+
+struct DoubleMatrix {
+	__m256d r[4];
+};
+
+inline DoubleMatrix XM_CALLCONV DoubleMatrixMultiply
+(
+	DoubleMatrix M1,
+	DoubleMatrix M2
+)
+{
+	DoubleMatrix mResult;
+	// Use vW to hold the original row
+	__m256d vW = M1.r[0];
+	// Splat the component X,Y,Z then W
+	__m256d vX = _mm256_permute_pd(vW, _MM_SHUFFLE(0, 0, 0, 0));
+	__m256d vY = _mm256_permute_pd(vW, _MM_SHUFFLE(1, 1, 1, 1));
+	__m256d vZ = _mm256_permute_pd(vW, _MM_SHUFFLE(2, 2, 2, 2));
+	vW = _mm256_permute_pd(vW, _MM_SHUFFLE(3, 3, 3, 3));
+	// Perform the operation on the first row
+	vX = _mm256_mul_pd(vX, M2.r[0]);
+	vY = _mm256_mul_pd(vY, M2.r[1]);
+	vZ = _mm256_mul_pd(vZ, M2.r[2]);
+	vW = _mm256_mul_pd(vW, M2.r[3]);
+	// Perform a binary add to reduce cumulative errors
+	vX = _mm256_add_pd(vX, vZ);
+	vY = _mm256_add_pd(vY, vW);
+	vX = _mm256_add_pd(vX, vY);
+	mResult.r[0] = vX;
+	// Repeat for the other 3 rows
+	vW = M1.r[1];
+	vX = _mm256_permute_pd(vW, _MM_SHUFFLE(0, 0, 0, 0));
+	vY = _mm256_permute_pd(vW, _MM_SHUFFLE(1, 1, 1, 1));
+	vZ = _mm256_permute_pd(vW, _MM_SHUFFLE(2, 2, 2, 2));
+	vW = _mm256_permute_pd(vW, _MM_SHUFFLE(3, 3, 3, 3));
+	vX = _mm256_mul_pd(vX, M2.r[0]);
+	vY = _mm256_mul_pd(vY, M2.r[1]);
+	vZ = _mm256_mul_pd(vZ, M2.r[2]);
+	vW = _mm256_mul_pd(vW, M2.r[3]);
+	vX = _mm256_add_pd(vX, vZ);
+	vY = _mm256_add_pd(vY, vW);
+	vX = _mm256_add_pd(vX, vY);
+	mResult.r[1] = vX;
+	vW = M1.r[2];
+	vX = _mm256_permute_pd(vW, _MM_SHUFFLE(0, 0, 0, 0));
+	vY = _mm256_permute_pd(vW, _MM_SHUFFLE(1, 1, 1, 1));
+	vZ = _mm256_permute_pd(vW, _MM_SHUFFLE(2, 2, 2, 2));
+	vW = _mm256_permute_pd(vW, _MM_SHUFFLE(3, 3, 3, 3));
+	vX = _mm256_mul_pd(vX, M2.r[0]);
+	vY = _mm256_mul_pd(vY, M2.r[1]);
+	vZ = _mm256_mul_pd(vZ, M2.r[2]);
+	vW = _mm256_mul_pd(vW, M2.r[3]);
+	vX = _mm256_add_pd(vX, vZ);
+	vY = _mm256_add_pd(vY, vW);
+	vX = _mm256_add_pd(vX, vY);
+	mResult.r[2] = vX;
+	vW = M1.r[3];
+	vX = _mm256_permute_pd(vW, _MM_SHUFFLE(0, 0, 0, 0));
+	vY = _mm256_permute_pd(vW, _MM_SHUFFLE(1, 1, 1, 1));
+	vZ = _mm256_permute_pd(vW, _MM_SHUFFLE(2, 2, 2, 2));
+	vW = _mm256_permute_pd(vW, _MM_SHUFFLE(3, 3, 3, 3));
+	vX = _mm256_mul_pd(vX, M2.r[0]);
+	vY = _mm256_mul_pd(vY, M2.r[1]);
+	vZ = _mm256_mul_pd(vZ, M2.r[2]);
+	vW = _mm256_mul_pd(vW, M2.r[3]);
+	vX = _mm256_add_pd(vX, vZ);
+	vY = _mm256_add_pd(vY, vW);
+	vX = _mm256_add_pd(vX, vY);
+	mResult.r[3] = vX;
+	return mResult;
+}
+
 int __cdecl main( int argc, char *argv[] )
 {
 	DirectX::XMFLOAT4A f4;
 	DirectX::XMFLOAT3A f3;
 	xmvector4f xmv;
 	xmvector4f ret0, ret1;
+
+	hlsl::xmmatrix4x4f m4;
 
 	xmvector3f v3;
 	v3 = { 1.0f, 2.0f, 3.0f };

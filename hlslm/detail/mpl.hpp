@@ -25,6 +25,9 @@ namespace mpl
 	template< size_t I, class T >
 	struct get_element;
 
+	template< size_t I, class T >
+	constexpr auto get_element_v = get_element<I, T>::value;
+
 	// recursive case
 	template< typename _Ty, size_t I, _Ty Head, _Ty... Tail >
 	struct get_element<I, integer_sequence<_Ty, Head, Tail...>>

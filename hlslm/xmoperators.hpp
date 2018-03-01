@@ -196,9 +196,9 @@ namespace DirectX
 		XM_MAKE_BINARY_CWISE_OPERATOR(uint, nor, XMVectorNorInt, XM_NAMES)
 		XM_MAKE_BINARY_CWISE_OPERATOR(uint, equal, XMVectorEqualInt, XM_NAMES)
 		XM_MAKE_BINARY_CWISE_OPERATOR(uint, not_equal, XMVectorNotEqualInt, XM_NAMES)
-		XM_MAKE_BINARY_CWISE_OPERATOR(uint, and, XMVectorAndInt, XM_NAMES)
-		XM_MAKE_BINARY_CWISE_OPERATOR(uint, or, XMVectorOrInt, XM_NAMES)
-		XM_MAKE_BINARY_CWISE_OPERATOR(uint, xor , XMVectorXorInt, XM_NAMES)
+		XM_MAKE_BINARY_CWISE_OPERATOR(uint, _and, XMVectorAndInt, XM_NAMES)
+		XM_MAKE_BINARY_CWISE_OPERATOR(uint, _or, XMVectorOrInt, XM_NAMES)
+		XM_MAKE_BINARY_CWISE_OPERATOR(uint, _xor , XMVectorXorInt, XM_NAMES)
 
 		// Float vector cwise functions
 		XM_MAKE_BINARY_CWISE_OPERATOR(float, min, XMVectorMin, XM_NAMES)

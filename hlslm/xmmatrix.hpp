@@ -12,7 +12,7 @@ namespace DirectX
 	{
 		namespace detail
 		{
-			template <typename _Scalar, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = 0>
+			template <typename _Scalar, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = DefaultMajor>
 			struct alignas(16) matrix_storage_base
 			{
 				static constexpr size_t Size = _Rows * _Cols;
@@ -20,34 +20,38 @@ namespace DirectX
 				static constexpr size_t Cols = _Cols;
 				static constexpr MatrixMajorEnum Major = _Major;
 
-				static constexpr size_t dimension(size_t dim) {
-					return dim > 1 ? 0 : dim ^ Major == 1 ? Rows : Cols;
-				}
-
+				using dimension = std::conditional_t<Major,
+					index_sequence<Rows, Cols>,
+					index_sequence<Cols, Rows>>;
+				static constexpr size_t Inner = get_element_v<0, dimension>;
+				static constexpr size_t Outer = get_element_v<1, dimension>;
 				using Scalar = _Scalar;
-				using InnerVectorType = xmvector<Scalar, dimension(0)>;
-				using OuterVectorType = xmvector<Scalar, dimension(1)>;
+				using InnerVectorType = xmvector<Scalar, Inner>;
+				using OuterVectorType = xmvector<Scalar, Outer>;
 
-				InnerVectorType m[dimension(1)];
+				matrix_storage_base& operator= (const matrix_storage_base&) = default;
+
+				InnerVectorType m[Outer];
 			};
 
-			template <typename _TDerived, size_t _Rows, size_t _Cols>
-			struct matrix_element_access_operator
+			template <typename _TDerived, typename _TStorage>
+			struct matrix_element_access_operator : public _TStorage
 			{
 			};
 
-			template <typename _TDerived>
-			struct matrix_arthmatic_operator_base : public matrix_element_access_operator<_TDerived, _TDerived::Rows, _TDerived::Cols>
+			template <typename _TDerived, typename _TStorage>
+			struct matrix_arthmatic_operator_base : public matrix_element_access_operator<_TDerived, _TStorage>
+			{
+
+			};
+
+			template <typename _TDerived, typename _TStorage>
+			struct matrix_logic_bitwise_operator_base : public matrix_arthmatic_operator_base<_TDerived, _TStorage>
 			{
 			};
 
-			template <typename _TDerived, typename _TScalar>
-			struct matrix_logic_bitwise_operator_base : public matrix_arthmatic_operator_base<_TDerived>
-			{
-			};
-
-			template <typename _TDerived>
-			struct matrix_operator_base : public matrix_logic_bitwise_operator_base<_TDerived, typename _TDerived::Scalar>
+			template <typename _TDerived, typename _TStorage>
+			struct matrix_operator_base : public matrix_logic_bitwise_operator_base<_TDerived, _TStorage>
 			{
 			};
 
@@ -131,38 +135,51 @@ namespace DirectX
 			using transposed_t = typename transposed<_TMat>::type;
 
 			template <typename _TMat, index_t _Row, size_t _Col, index_t _BlockRows, size_t _BlockCols>
-			using blocked_t = typename blocked<_TMat, _Row, _Col, _BRows, _BCols>::type;
+			using blocked_t = typename blocked<_TMat, _Row, _Col, _BlockRows, _BlockCols>::type;
 		}
 
-		template <typename _TDerived, typename _TResult>
-		struct matrix_expr : public detail::matrix_operator_base<_TDerived> {
+		template <typename _TDerived, typename _TResult, typename _TStorage = typename _TDerived::storage_t>
+		struct matrix_expr : public detail::matrix_operator_base<_TDerived, _TStorage> {
 			using result_t = _TResult;
-			using scalar_t = typename result_t::Scalar;
-			static constexpr Rows = result_t::Rows;
-			static constexpr Rows = result_t::Cols;
+			using reuslt_traits = traits::vector_traits<_TResult>;
+			using scalar_t = typename reuslt_traits::Scalar;
+			static constexpr auto Rows = reuslt_traits::rows;
+			static constexpr auto Cols = reuslt_traits::cols;
 
 			// An matrix expression cannot be instancinated
 			// One should awalys acquire it by reinterpret_cast
 			// And hold it by reference
-			xm_matrix_expr() = delete;
+			// matrix_expr() = delete;
 
-			auto&& eval() const {
-				return _TDerived::eval();
+			// eval this expression
+			result_t eval() const {
+				result_t result;
+				this->_TDerived::eval(result);
+				return result;
+			}
+
+			// eval this expression into result
+			void eval(result_t& result) const {
+				this->_TDerived::eval(result);
 			}
 
 			template <typename _TSrcExpr>
-			void
-				assign(_TSrcExpr&& src_expr) {
+			void assign(_TSrcExpr&& src_expr) {
 				static_assert(traits::is_assignable<result_t, typename _TSrcExpr::result_t>::value, "Assignment expression type not agree.");
-				_TDerived::assign(std::forward(src_expr));
+				this->_TDerived::assign(std::forward<_TSrcExpr>(src_expr));
 			}
 
-			constexpr size_t rows() const { return _TResult::Rows; }
-			constexpr size_t cols() const { return _TResult::Cols; }
+			template <typename _TSrcExpr>
+			void operator=(_TSrcExpr&& src_expr) {
+				this->assign<_TSrcExpr>(std::forward<_TSrcExpr>(src_expr));
+			}
 
-			template <_TExpr>
+			constexpr size_t rows() const { return Rows; }
+			constexpr size_t cols() const { return Cols; }
+
+			template <typename _TExpr>
 			inline const _TExpr& as_expr() const { return reinterpret_cast<const _TExpr&>(*this);}
-			template <_TExpr>
+			template <typename _TExpr>
 			inline _TExpr& as_expr() { return reinterpret_cast<_TExpr&>(*this); }
 
 			const auto& transpose() const { return this->as_expr<detail::transposed_t<_TDerived>>(); }
@@ -189,62 +206,61 @@ namespace DirectX
 
 		namespace detail
 		{
-			template <typename _Scalar, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = 0>
-			inline void XM_CALLCONV do_transpose(const matrix_storage_base<_Scalar, Rows, Cols, _Major>& src, matrix_storage_base<_Scalar, Rows, Cols, _Major>& dest)
+			template <typename _Scalar, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = DefaultMajor>
+			inline void XM_CALLCONV do_transpose(const matrix_storage_base<_Scalar, _Rows, _Cols, _Major>& src, matrix_storage_base<_Scalar, _Cols, _Rows, _Major>& dest)
 			{
-				
+				XMMATRIX mat;
+				mat = XMMatrixTranspose(mat);
 			}
-
-
-			template <typename _TMat>
-			struct transposed : public matrix_expr<transposed<_TMat>, xmmatrix<typename _TMat::Scalar, _TMat::Cols, _TMat::Rows>>
-			{
-				using result_t = xmmatrix<typename _TMat::Scalar, _TMat::Cols, _TMat::Rows>;
-				_TMat _operand;
-				result_t eval() const {
-					result_t val;
-					auto&& src = _operand.eval();
-					do_transpose(src, static_cast<typename result_t::storage_t&>(val));
-					return val;
-				}
-			};
 		}
 
-		template <typename _T, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major = 0>
-		struct xmmatrix
+		template <typename _TMat>
+		struct matrix_transpose_expr : public matrix_expr<matrix_transpose_expr<_TMat>, xmmatrix<typename _TMat::Scalar, _TMat::Cols, _TMat::Rows>>
 		{
-			static constexpr size_t Size = _Rows * _Cols;
-			static constexpr size_t Rows = _Rows;
-			static constexpr size_t Cols = _Cols;
-			static constexpr size_t Rank = (Cols < Rows) ? Cols : Rows;
-			using Scalar = _T;
-			using RowVectorType = xmvector<Scalar, Cols>;
-			using ColVectorType = xmvector<Scalar, Rows>;
-			using DialogVectorType = xmvector<Scalar, Rank>;
+			using result_t = xmmatrix<typename _TMat::Scalar, _TMat::Cols, _TMat::Rows>;
+			static constexpr bool is_lvalue = true;
 
-			RowVectorType r[Rows];
+			void eval(result_t& dst) const {
+				auto&& src = this->as_expr<_TMat>().eval();
+				detail::do_transpose(src, static_cast<typename result_t::storage_t&>(dst));
+				return dst;
+			}
 
-			// Row accessers
-			template <index_t _row>
-			RowVectorType row() const { return r[_row]; }
-			template <index_t _row>
-			RowVectorType& row() { return r[_row]; }
+			void assign(const result_t& src) {
+				result_t srct;
+				detail::do_transpose(src, static_cast<typename result_t::storage_t&>(srct));
+				this->as_expr<_TMat>()::assign(srct);
+			}
 
-			// Column accessers
-			template <index_t _col>
-			ColVectorType get_col() const { return r[_col]; }
-			template <index_t _col, class rhs_t>
-			std::enable_if_t<traits::is_assignable<ColVectorType, rhs_t>::value>
-				set_col(const rhs_t& value) { return r[_col]; }
+			template <typename _TSrcOperand>
+			void assign(const matrix_transpose_expr<_TSrcOperand>& src) {
+				this->as_expr<_TMat>()::assign(src.as_expr<_TSrcOperand>());
+			}
 
-			// element accessers
-			template <index_t _row, index_t _col>
-			Scalar get() const;
-			template <index_t _row, index_t _col>
-			void set(Scalar value);
+		};
+
+		template <typename _TMat>
+		struct matrix_dialog_expr : public matrix_expr<matrix_dialog_expr<_TMat>, xmvector<typename _TMat::Scalar, (_TMat::Cols <= _TMat::Rows ? _TMat::Cols : _TMat::Rows)>>
+		{
+			using result_t = xmvector<typename _TMat::Scalar, (_TMat::Cols <= _TMat::Rows ? _TMat::Cols : _TMat::Rows)>;
+		};
 
 
+		template <typename _T, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major>
+		struct xmmatrix : public matrix_expr<xmmatrix<_T,_Rows,_Cols,_Major>, xmmatrix<_T, _Rows, _Cols, _Major>, detail::matrix_storage_base<_T, _Rows, _Cols, _Major>>
+		{
+			using storage_t = detail::matrix_storage_base<_T, _Rows, _Cols, _Major>;
+			static constexpr bool	is_lvalue = true;
 
+			void eval(xmmatrix& dst) const
+			{
+				dst.storage_t::operator=(*this);
+			}
+
+			void assign(xmmatrix& src)
+			{
+				this->storage_t::operator=(src);
+			}
 		};
 
 		using xmmatrix4f = xmmatrix<float, 4, 4>;

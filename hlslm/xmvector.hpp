@@ -62,10 +62,10 @@ namespace DirectX
 
 			inline xmvector() = default;
 
-			inline explicit xmvector(CXMVECTOR xmv) { v = xmv; }
+			inline explicit xmvector(CXMVECTOR xmv) { this->v = xmv; }
 
 			inline explicit xmvector(Scalar s) {
-				v = detail::replicate_scalar(s);
+				this->v = detail::replicate_scalar(s);
 			}
 			
 			inline explicit xmvector(const Scalar* pVector) {
@@ -73,14 +73,14 @@ namespace DirectX
 			}
 
 			inline xmvector(Scalar _x, Scalar _y, Scalar _z = Scalar(0), Scalar _w = Scalar(0)) {
-				v = detail::set_vector(_x, _y, _z, _w);
+				this->v = detail::set_vector(_x, _y, _z, _w);
 			}
 
 			this_type& operator= (const this_type& rhs) { this->v = rhs.v; return *this; }
 
 			inline explicit operator XMVECTOR () const
 			{
-				return v;
+				return this->v;
 			}
 
 			// reinterpret cast this vector
@@ -158,7 +158,7 @@ namespace DirectX
 
 			// Dynamic swizzler
 			inline auto XM_CALLCONV swizzle(uint _x, uint _y = 1, uint _z = 2, uint _w = 3) const
-			{ return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(v, _x, _y, _z, _w)); }
+			{ return xmvector<Scalar, 4>(_DXMEXT XMVectorSwizzle(this->v, _x, _y, _z, _w)); }
 
 			inline this_type XM_CALLCONV operator - () const
 			{ this_type ret; ret.v = vector_math::negate<scalar_type, size>::invoke(this->v); return ret; }

@@ -143,7 +143,7 @@ namespace DirectX
 			template <typename _T, index_t... _SwzArgs>
 			struct swizzle_from_indecis<_T, index_sequence<_SwzArgs...>>
 			{
-				using type = xmswizzler<_T, _SwzArgs...>;
+				using type = typename xmswizzler<_T, _SwzArgs...>;
 			};
 
 			template <typename _T, typename IS>
@@ -155,11 +155,19 @@ namespace DirectX
 			template <typename _T, index_t... SW1, index_t... SW2>
 			struct xmswizzler_concat<xmswizzler<_T, SW1...>, SW2...>
 			{
-				using type = swizzle_from_indecis_t <
+				using type = typename swizzle_from_indecis_t <
 					_T,
 					concat_swizzle_sequence_t <
 					index_sequence<SW1...>,
 					index_sequence<SW2... >> >;
+			};
+
+			template <typename XMV_S1, index_t... SW2>
+			struct xmswizzler_concat
+			{
+				using type = typename swizzle_from_indecis_t <
+					XMV_S1,
+					index_sequence<SW2...> >;
 			};
 
 			template <typename XMV_S1, index_t... SW2>
@@ -177,13 +185,17 @@ namespace DirectX
 			: public detail::logical_bitwise_operator_base<xmswizzler<_T, _SwzArgs...>, _T, sizeof...(_SwzArgs)>
 		{
 			using this_type = xmswizzler<_T, _SwzArgs...>;
+			//using base_type_traits = typename ::DirectX::hlsl::traits::vector_traits<_T>::type;
+			// size of the vector type before swizzle
+			//static constexpr size_t base_size = base_type_traits::rows*base_type_traits::cols;
 			using Scalar = _T;
-			static constexpr size_t Size = sizeof...(_SwzArgs);
+			// logical size of the swizzled vector
+			static constexpr size_t size = sizeof...(_SwzArgs);
+			static constexpr size_t Size = size;
 
-			static_assert(Size <= 4, "Swizzle element count out of 4");
+			static_assert(size <= 4, "Swizzle element count out of 4");
 			static_assert(mpl::conjunction < std::integral_constant<bool, _SwzArgs < 4>...>::value, "Swizzle index out of [0,3]");
 
-			static constexpr size_t size = Size;
 			using scalar_type = Scalar;
 			using Indices = std::index_sequence<_SwzArgs...>;
 			using index_type = Indices;

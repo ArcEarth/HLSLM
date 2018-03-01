@@ -46,7 +46,10 @@ namespace DirectX
 			};
 
 			template <typename _TScalar, size_t _Size>
-			struct and
+			struct _and;
+
+			template <typename _TScalar, size_t _Size>
+			struct _and
 			{
 				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
 				{
@@ -57,7 +60,7 @@ namespace DirectX
 			};
 
 			template <typename _TScalar, size_t _Size>
-			struct or
+			struct _or
 			{
 				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
 				{
@@ -68,7 +71,7 @@ namespace DirectX
 			};
 
 			template <typename _TScalar, size_t _Size>
-			struct xor
+			struct _xor
 			{
 				static inline XMVECTOR XM_CALLCONV invoke(FXMVECTOR lhs, FXMVECTOR rhs)
 				{

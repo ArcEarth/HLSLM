@@ -163,6 +163,14 @@ namespace DirectX
 				using scalar = _Ty;
 			};
 
+			template <typename _Ty, size_t _Rows, size_t _Cols, MatrixMajorEnum _Major>
+			struct vector_traits<xmmatrix<_Ty, _Rows, _Cols, _Major>>
+			{
+				static constexpr int rows = _Rows;
+				static constexpr int cols = _Cols;
+				using scalar = _Ty;
+			};
+
 			template <typename _Ty>
 			struct is_xmvector : public std::false_type {};
 
@@ -181,11 +189,11 @@ namespace DirectX
 			template <typename _Ty, index_t... _SwzIdx>
 			struct is_expression<xmswizzler<_Ty, _SwzIdx...>> : public std::true_type {};
 
-			template <typename _Ty, size_t _SrcRows, size_t _SrcCols>
-			struct is_expression<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
+			//template <typename _Ty, size_t _SrcRows, size_t _SrcCols>
+			//struct is_expression<xmtranposer<_Ty, _SrcRows, _SrcCols>> : public std::true_type {};
 
-			template <typename _Ty, size_t _StRows, size_t _StCols, size_t _Rows, size_t _Cols>
-			struct is_expression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
+			//template <typename _Ty, size_t _StRows, size_t _StCols, size_t _Rows, size_t _Cols>
+			//struct is_expression<xmmatblock<_Ty, _StRows, _StCols, _Rows, _Cols>> : public std::true_type {};
 
 			template <>
 			struct scalar_traits<uint> : public std::true_type {
@@ -213,7 +221,7 @@ namespace DirectX
 
 			template <typename _Ty>
 			struct scalar_traits<xmcomplex<_Ty>> : public scalar_traits<_Ty> {
-				using type = std::conditional_t<value, xmcomplex<_Ty>, void>;
+				using type = std::conditional_t<scalar_traits<_Ty>::value, xmcomplex<_Ty>, void>;
 			};
 
 			template <typename _Ty>
